@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nihongo Quest — Neo-Brutalism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Space+Grotesk:wght@500;700&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/base.css">
+<style>
+:root {
+  --ink: #0B0B0B; --paper: #FFF4D9; --white: #FFFFFF; --mute: #EDE5D0;
+  --yellow: #FFD23F; --blue: #3D5AFE; --green: #2BD17E; --pink: #FF8FC7; --red: #FF5A47; --cyan: #62E3EA;
+  --c-fund: var(--blue); --c-prac: var(--green); --c-triv: var(--pink); --c-boss: var(--red);
+  --b: 3px solid var(--ink); --sh: 5px 5px 0 var(--ink); --sh-sm: 3px 3px 0 var(--ink); --sh-lg: 8px 8px 0 var(--ink);
+  --focus: var(--blue); --ico-stroke: 2.5;
+  --display: "Dela Gothic One", "Zen Kaku Gothic New", sans-serif;
+}
+body {
+  background-color: var(--paper);
+  background-image: linear-gradient(rgba(11,11,11,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(11,11,11,.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  color: var(--ink); font: 500 16px/1.5 "Space Grotesk", "Zen Kaku Gothic New", sans-serif;
+}
+.jp { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; }
+.romaji { font-family: "Space Grotesk", sans-serif; font-weight: 700; opacity: .7; }
+b { font-weight: 700; background: var(--yellow); padding: 0 3px; }
+
+/* Tombol: tekan = bayangan hilang */
+.btn {
+  border: var(--b); border-radius: 6px; box-shadow: var(--sh); background: var(--white);
+  font-family: var(--display); font-size: 1.05rem; letter-spacing: .02em; text-transform: uppercase;
+  transition: transform .08s, box-shadow .08s;
+}
+.btn:hover:not(:disabled) { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--ink); }
+.btn:active:not(:disabled) { transform: translate(5px, 5px); box-shadow: 0 0 0 var(--ink); }
+.btn:disabled { background: var(--mute); color: #5E5A4F; box-shadow: none; transform: translate(5px, 5px); }
+.btn-primary { background: var(--yellow); }
+.btn-yes { background: var(--green); }
+.btn-no { background: var(--red); }
+
+/* Topbar */
+.topbar { position: sticky; top: 0; z-index: 10; background: var(--white); border-bottom: var(--b); }
+.brand { font-family: var(--display); font-size: clamp(.95rem, 4vw, 1.15rem); white-space: nowrap; }
+.brand .ico { width: 36px; height: 36px; padding: 5px; background: var(--red); border: var(--b); box-shadow: var(--sh-sm); }
+.toggle-label { font-weight: 700; text-transform: uppercase; font-size: .8rem; }
+.toggle-track { border: var(--b); background: var(--white); }
+.toggle-thumb { background: var(--ink); left: 2px; }
+.toggle[aria-pressed="true"] .toggle-track { background: var(--green); }
+
+/* Peta: tiket bertumpuk */
+.map { display: grid; gap: 22px; max-width: 1040px; margin: 0 auto; padding: 24px 16px 72px; }
+@media (min-width: 900px) {
+  .map { grid-template-columns: 360px 1fr; align-items: start; column-gap: 40px; }
+  .unit, .stats { grid-column: 1; }
+  .path { grid-column: 2; grid-row: 1 / span 2; }
+}
+.unit { position: relative; padding: 20px; background: var(--yellow); border: var(--b); box-shadow: var(--sh-lg); }
+.unit-label { display: inline-block; padding: 4px 10px; background: var(--ink); color: var(--yellow); font-family: var(--display); font-size: .85rem; transform: rotate(-2deg); }
+.unit-title { margin: 14px 0 6px; font-size: clamp(2rem, 8vw, 2.7rem); }
+.unit-title .jp { font-family: var(--display); font-weight: 400; }
+.unit-sub { font-weight: 700; }
+.unit-progress { margin-top: 18px; }
+.bar { height: 20px; border: var(--b); background: var(--white); }
+.bar-fill { background: var(--ink); }
+.unit-count { font-family: var(--display); font-size: .9rem; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.stat { display: flex; flex-direction: column; gap: 4px; padding: 12px; border: var(--b); box-shadow: var(--sh-sm); background: var(--white); }
+.stat .ico { width: 24px; height: 24px; }
+.stat strong { font-family: var(--display); font-size: 1.6rem; line-height: 1; }
+.stat span { font-size: .72rem; font-weight: 700; text-transform: uppercase; line-height: 1.2; }
+.stat--streak { background: var(--pink); }
+.stat--xp { background: var(--cyan); }
+
+.path { position: relative; display: grid; gap: 24px; }
+.path::before { content: ""; position: absolute; left: 41px; top: 30px; bottom: 30px; border-left: 6px solid var(--ink); }
+.node-btn {
+  gap: 16px; padding: 12px 16px 12px 12px; background: var(--white); border: var(--b); box-shadow: var(--sh);
+  transition: transform .1s, box-shadow .1s;
+}
+.node:nth-child(odd) .node-btn { transform: rotate(-.8deg); }
+.node:nth-child(even) .node-btn { transform: rotate(.8deg); }
+.node .node-btn:hover { transform: translate(-2px, -2px); box-shadow: var(--sh-lg); }
+.node .node-btn:active { transform: translate(5px, 5px); box-shadow: none; }
+.node-icon { width: 64px; height: 64px; background: var(--paper); border: var(--b); }
+.node-icon .ico { width: 30px; height: 30px; }
+.node-label { font-family: var(--display); font-size: .78rem; letter-spacing: .03em; }
+.node-title { font-family: var(--display); font-size: 1.25rem; line-height: 1.2; }
+.node-sub { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: .9rem; }
+.node--done .node-btn { background: var(--green); }
+.node--done .node-icon { background: var(--white); }
+.node--current .node-btn { background: var(--blue); color: var(--white); }
+.node--current .node-icon { background: var(--yellow); color: var(--ink); }
+.node-start {
+  position: absolute; right: -10px; top: -16px; padding: 3px 12px; background: var(--yellow); color: var(--ink);
+  border: var(--b); box-shadow: var(--sh-sm); font-family: var(--display); font-size: .9rem; text-transform: uppercase; transform: rotate(5deg);
+}
+.node--locked .node-btn { background: repeating-linear-gradient(-45deg, var(--white) 0 10px, #F3ECDA 10px 20px); box-shadow: var(--sh-sm); color: #4A463D; }
+.node--locked .node-icon { background: var(--mute); }
+.node.is-new .node-btn { animation: nb-wiggle .5s 3; }
+@keyframes nb-wiggle { 50% { transform: rotate(-2deg) scale(1.03); } }
+
+/* Pelajaran */
+.lhead { background: var(--white); border-bottom: var(--b); }
+.lesson { max-width: 760px; }
+.icon-btn { border: var(--b); background: var(--white); box-shadow: var(--sh-sm); }
+.icon-btn:active { transform: translate(3px, 3px); box-shadow: none; }
+.phase-bar { height: 16px; border: var(--b); background: var(--white); }
+.phase-name { font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+.phase-seg.is-active .phase-name { text-decoration: underline 3px; text-underline-offset: 3px; }
+.hearts .ico { fill: var(--red); stroke: var(--ink); stroke-width: 2.2; }
+.hearts .is-lost { fill: var(--white); }
+
+.phase-tag { padding: 6px 10px; background: var(--ink); color: var(--white); font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.step-title { font-family: var(--display); font-weight: 400; font-size: clamp(1.45rem, 5.5vw, 1.95rem); line-height: 1.2; }
+.step-prompt { font-weight: 700; }
+.card { padding: 18px; background: var(--white); border: var(--b); box-shadow: 6px 6px 0 var(--ink); }
+.concept-text { font-size: 1.05rem; }
+
+.f-chip { border: var(--b); box-shadow: var(--sh-sm); background: var(--white); }
+.f-chip--topic { background: var(--cyan); }
+.f-chip--particle { background: var(--yellow); }
+.f-chip--pred { background: var(--green); }
+.f-chip--copula { background: var(--pink); }
+.f-chip--neg { background: var(--red); }
+.f-main { font-family: var(--display); font-size: 1.45rem; line-height: 1.1; }
+.f-main .jp { font-family: var(--display); font-weight: 400; }
+.f-note { font-weight: 700; text-transform: uppercase; }
+.f-plus { font-family: var(--display); font-size: 1.4rem; }
+.example { padding-top: 14px; border-top: 3px dashed var(--ink); }
+.speak { border: var(--b); background: var(--yellow); box-shadow: var(--sh-sm); }
+.speak:active, .speak.is-playing { transform: translate(3px, 3px); box-shadow: none; }
+.trans { font-weight: 700; }
+.tip { background: var(--yellow); border: var(--b); }
+.hint { background: var(--cyan); border: var(--b); box-shadow: var(--sh-sm); }
+
+.vocab-item { background: var(--white); border: var(--b); box-shadow: var(--sh-sm); transition: transform .08s, box-shadow .08s; }
+.vocab-item:nth-child(3n+2) { background: #E2E8FF; }
+.vocab-item:nth-child(3n) { background: #FFE6F2; }
+.vocab-item:hover { transform: translate(-2px, -2px); box-shadow: var(--sh); }
+.vocab-item.is-playing { background: var(--yellow); }
+.vocab-mean { font-weight: 700; }
+
+.option { background: var(--white); border: var(--b); box-shadow: var(--sh); font-weight: 700; transition: transform .08s, box-shadow .08s, background .1s; }
+.option:hover:not(:disabled) { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--ink); }
+.option[aria-pressed="true"] { background: var(--yellow); transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--ink); }
+.option-key { border: var(--b); background: var(--white); font-family: var(--display); }
+.option.is-correct { background: var(--green); }
+.option.is-wrong { background: var(--red); }
+.option.is-wrong .option-body { text-decoration: line-through 3px; }
+.options.is-locked .option:not(.is-correct):not(.is-wrong) { opacity: .5; }
+.prompt-card { background: #E2E8FF; }
+
+.listen { background: var(--white); }
+.big-speak { background: var(--yellow); border: var(--b); box-shadow: var(--sh); }
+.big-speak:active { transform: translate(5px, 5px); box-shadow: none; }
+.chip-btn { border: var(--b); background: var(--white); font-weight: 700; }
+
+.answer-line { border: 3px dashed var(--ink); background: rgba(255,255,255,.7); }
+.answer-line.is-correct { background: var(--green); border-style: solid; }
+.answer-line.is-wrong { background: var(--red); border-style: solid; }
+.token { background: var(--white); border: var(--b); box-shadow: var(--sh-sm); }
+.token:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: none; }
+
+.match-item { background: var(--white); border: var(--b); box-shadow: var(--sh-sm); font-weight: 700; }
+.match-item[aria-pressed="true"] { background: var(--yellow); transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.match-item.is-matched { background: var(--green); box-shadow: none; transform: translate(3px, 3px); opacity: .7; }
+.match-item.is-wrong { background: var(--red); }
+.foot-note { font-weight: 700; text-transform: uppercase; }
+
+.swipe-help { font-weight: 700; }
+.swipe-card { background: var(--white); border: var(--b); box-shadow: var(--sh-lg); }
+.swipe-stamp { border: var(--b); font-family: var(--display); text-transform: uppercase; font-size: 1.1rem; }
+.swipe-stamp--no { background: var(--red); transform: rotate(-10deg); }
+.swipe-stamp--yes { background: var(--green); transform: rotate(10deg); }
+.swipe-claim { font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.swipe-mean { font-family: var(--display); font-size: 1.35rem; }
+
+.flip-q { font-weight: 700; font-size: 1.1rem; }
+.flip-back { background: var(--yellow); }
+.flip-card.is-miss .flip-back { background: var(--pink); }
+.flip-verdict { font-family: var(--display); font-size: 1.35rem; text-transform: uppercase; }
+
+.fact-kicker { margin-bottom: 4px; padding: 2px 10px; background: var(--pink); border: var(--b); font-weight: 700; font-size: .75rem; text-transform: uppercase; }
+.fact-art { padding: 18px; background: var(--cyan); border: var(--b); font-size: 2.2rem; }
+.fact-art .jp { font-family: var(--display); font-weight: 400; }
+
+.timer { border: var(--b); background: var(--white); }
+.timer-fill { background: var(--yellow); }
+.timer-label { font-weight: 700; text-transform: uppercase; }
+
+.sheet { border-top: var(--b); }
+.sheet--ok { background: var(--green); }
+.sheet--bad { background: var(--red); }
+.sheet-icon { border: var(--b); background: var(--white); box-shadow: var(--sh-sm); }
+.sheet-title { font-family: var(--display); font-size: 1.5rem; text-transform: uppercase; }
+.sheet-text p:last-child { font-weight: 700; }
+.sheet-bonus { background: var(--yellow); border: 2px solid var(--ink); font-family: "Space Grotesk", sans-serif; }
+.btn-ok, .btn-bad { background: var(--white); }
+
+.lfoot { background: var(--paper); border-top: var(--b); }
+
+.intro-icon, .result-badge { background: var(--phase); border: var(--b); box-shadow: var(--sh-lg); transform: rotate(-4deg); }
+.lesson--fundamental .intro-icon { color: var(--white); }
+.intro-kicker { margin-bottom: 4px; padding: 2px 10px; background: var(--ink); color: var(--white); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-size: .75rem; }
+.intro-desc { font-size: 1.05rem; }
+.intro-list li { padding: 12px 14px; background: var(--white); border: var(--b); box-shadow: var(--sh-sm); font-weight: 700; }
+.intro-list li:nth-child(2) { transform: rotate(.6deg); }
+.result-badge { background: var(--yellow); }
+.result--fail .result-badge { background: var(--red); }
+.stars .ico { stroke: var(--ink); stroke-width: 2; fill: var(--white); }
+.stars .is-on { fill: var(--yellow); }
+.rstat { background: var(--white); border: var(--b); box-shadow: var(--sh-sm); }
+.rstat strong { font-family: var(--display); font-weight: 400; font-size: 1.6rem; }
+.rstat span { font-weight: 700; text-transform: uppercase; }
+.unlock-note { background: var(--cyan); border: var(--b); box-shadow: var(--sh-sm); font-weight: 700; }
+
+.toast { background: var(--ink); color: var(--yellow); border: var(--b); font-weight: 700; box-shadow: 5px 5px 0 var(--yellow); }
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+<script src="shared/bab1-data.js"></script>
+<script src="shared/engine.js"></script>
+<script>
+NihongoMock.start({
+  brand: "NIHONGO QUEST",
+  okWords: ["BENAR!", "MANTAP!", "TEPAT!"],
+  badWords: ["SALAH!", "BELUM TEPAT"],
+});
+</script>
+</body>
+</html>

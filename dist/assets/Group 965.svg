@@ -1,0 +1,34 @@
+<svg width="61" height="61" viewBox="0 0 61 61" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="Repeat group 1_inner" data-figma-trr="r6u1-0f">
+<path d="M30.4354 7.72881C25.79 2.4088 17.2792 0.3814 17.2791 7.72881C17.2791 15.0762 27.4865 30.3219 30.4354 30.3219C33.3842 30.3219 43.3647 14.5252 43.3647 7.72881C43.3647 0.932447 35.4846 2.68156 30.4354 7.72881Z" fill="#E694D5" stroke="#7B1966"/>
+<path d="M30.5103 10.7041C27.4403 7.18826 21.8158 5.84841 21.8158 10.7041C21.8158 15.5598 28.5615 25.6352 30.5103 25.6352C32.4591 25.6352 39.055 15.1956 39.055 10.7041C39.055 6.21258 33.8473 7.36852 30.5103 10.7041Z" fill="#FFB9F0" stroke-width="0.660869" stroke="#7B1966"/>
+</g>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(41.4205 -11.0986) rotate(60)"/>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(71.7425 19.2233) rotate(120)"/>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(60.6439 60.6439) rotate(-180)"/>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(19.2233 71.7425) rotate(-120)"/>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(-11.0986 41.4205) rotate(-60)"/>
+<g id="Repeat group 2_inner" data-figma-trr="r6u1-0f">
+<path d="M30.4354 7.72881C25.79 2.4088 17.2792 0.3814 17.2791 7.72881C17.2791 15.0762 27.4865 30.3219 30.4354 30.3219C33.3842 30.3219 43.3647 14.5252 43.3647 7.72881C43.3647 0.932447 35.4846 2.68156 30.4354 7.72881Z" fill="#E694D5" stroke="#7B1966"/>
+<path d="M30.5103 10.7041C27.4403 7.18826 21.8158 5.84841 21.8158 10.7041C21.8158 15.5598 28.5615 25.6352 30.5103 25.6352C32.4591 25.6352 39.055 15.1956 39.055 10.7041C39.055 6.21258 33.8473 7.36852 30.5103 10.7041Z" fill="#FFB9F0" stroke-width="0.660869" stroke="#7B1966"/>
+</g>
+<use xlink:href="#Repeat%20group%202_inner" transform="translate(41.4205 -11.0986) rotate(60)"/>
+<use xlink:href="#Repeat%20group%202_inner" transform="translate(71.7425 19.2233) rotate(120)"/>
+<use xlink:href="#Repeat%20group%202_inner" transform="translate(60.6439 60.6439) rotate(-180)"/>
+<use xlink:href="#Repeat%20group%202_inner" transform="translate(19.2233 71.7425) rotate(-120)"/>
+<use xlink:href="#Repeat%20group%202_inner" transform="translate(-11.0986 41.4205) rotate(-60)"/>
+<g filter="url(#filter0_d_106_242)">
+<path d="M36.2802 31.8402C36.2802 34.4778 33.7413 36.616 30.6094 36.616C27.4775 36.616 24.9386 34.4778 24.9386 31.8402C24.9386 29.2026 27.4775 27.0645 30.6094 27.0645C33.7413 27.0645 36.2802 29.2026 36.2802 31.8402Z" fill="#FFEFEF"/>
+</g>
+<defs>
+<filter id="filter0_d_106_242" x="24.9386" y="27.0645" width="11.3416" height="13.5515" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="4"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_106_242"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_106_242" result="shape"/>
+</filter>
+</defs>
+</svg>

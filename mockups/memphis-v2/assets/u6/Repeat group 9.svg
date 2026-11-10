@@ -1,0 +1,11 @@
+<svg width="79" height="79" viewBox="0 0 79 79" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="Repeat group 9_inner" data-figma-trr="r6u1-0f">
+<path d="M39.409 8.68158C34.7876 1.47274 26.3207 -1.27447 26.3207 8.68158C26.3207 18.6376 36.4754 39.2962 39.409 39.2962C42.3427 39.2962 52.2717 17.8909 52.2717 8.68158C52.2717 -0.527777 44.4323 1.84235 39.409 8.68158Z" fill="#E694D5" stroke="#7B1966"/>
+<path d="M39.4836 12.7135C36.4295 7.94936 30.8339 6.13381 30.8339 12.7135C30.8339 19.2931 37.5449 32.9457 39.4836 32.9457C41.4224 32.9457 47.9842 18.7996 47.9842 12.7135C47.9842 6.62727 42.8033 8.19362 39.4836 12.7135Z" fill="#FFB9F0" stroke-width="0.660869" stroke="#7B1966"/>
+</g>
+<use xlink:href="#Repeat%20group%209_inner" transform="translate(53.6796 -14.3834) rotate(60)"/>
+<use xlink:href="#Repeat%20group%209_inner" transform="translate(92.9759 24.9128) rotate(120)"/>
+<use xlink:href="#Repeat%20group%209_inner" transform="translate(78.5924 78.5924) rotate(-180)"/>
+<use xlink:href="#Repeat%20group%209_inner" transform="translate(24.9128 92.9759) rotate(-120)"/>
+<use xlink:href="#Repeat%20group%209_inner" transform="translate(-14.3834 53.6796) rotate(-60)"/>
+</svg>

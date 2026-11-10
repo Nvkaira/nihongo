@@ -1,0 +1,11 @@
+<svg width="126" height="126" viewBox="0 0 126 126" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="Repeat group 17_inner" data-figma-trr="r6u1-0f">
+<path d="M63.0895 13.5285C56.1661 1.89817 43.4818 -2.53403 43.4818 13.5285C43.4817 29.591 58.6946 62.9205 63.0895 62.9205C67.4844 62.9205 82.3592 28.3864 82.3592 13.5285C82.3592 -1.32936 70.6148 2.49447 63.0895 13.5285Z" fill="#E694D5" stroke="#7B1966"/>
+<path d="M63.2013 20.0333C58.6258 12.3472 50.2431 9.4181 50.2431 20.0333C50.2431 30.6486 60.2968 52.675 63.2013 52.675C66.1057 52.675 75.936 29.8524 75.936 20.0333C75.936 10.2142 68.1745 12.7413 63.2013 20.0333Z" fill="#FFB9F0" stroke-width="0.660869" stroke="#7B1966"/>
+</g>
+<use xlink:href="#Repeat%20group%2017_inner" transform="translate(85.9509 -23.0305) rotate(60)"/>
+<use xlink:href="#Repeat%20group%2017_inner" transform="translate(148.871 39.89) rotate(120)"/>
+<use xlink:href="#Repeat%20group%2017_inner" transform="translate(125.841 125.841) rotate(-180)"/>
+<use xlink:href="#Repeat%20group%2017_inner" transform="translate(39.89 148.871) rotate(-120)"/>
+<use xlink:href="#Repeat%20group%2017_inner" transform="translate(-23.0305 85.9509) rotate(-60)"/>
+</svg>

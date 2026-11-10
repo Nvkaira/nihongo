@@ -1,0 +1,34 @@
+<svg width="126" height="126" viewBox="0 0 126 126" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="Repeat group 1_inner" data-figma-trr="r6u1-0f">
+<path d="M63.0895 13.5284C56.1661 1.89805 43.4818 -2.53416 43.4817 13.5284C43.4817 29.5909 58.6946 62.9203 63.0895 62.9203C67.4844 62.9203 82.3591 28.3862 82.3591 13.5284C82.3591 -1.32948 70.6148 2.49435 63.0895 13.5284Z" fill="#E694D5" stroke="#7B1966"/>
+<path d="M63.2012 20.0331C58.6258 12.347 50.2431 9.41789 50.2431 20.0331C50.243 30.6484 60.2968 52.6748 63.2012 52.6748C66.1057 52.6748 75.936 29.8522 75.936 20.0331C75.936 10.214 68.1745 12.7411 63.2012 20.0331Z" fill="#FFB9F0" stroke-width="0.660869" stroke="#7B1966"/>
+</g>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(85.9509 -23.0305) rotate(60)"/>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(148.871 39.89) rotate(120)"/>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(125.841 125.841) rotate(-180)"/>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(39.89 148.871) rotate(-120)"/>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(-23.0305 85.9509) rotate(-60)"/>
+<g id="Repeat group 2_inner" data-figma-trr="r6u1-0f">
+<path d="M63.0895 13.5284C56.1661 1.89805 43.4818 -2.53416 43.4817 13.5284C43.4817 29.5909 58.6946 62.9203 63.0895 62.9203C67.4844 62.9203 82.3591 28.3862 82.3591 13.5284C82.3591 -1.32948 70.6148 2.49435 63.0895 13.5284Z" fill="#E694D5" stroke="#7B1966"/>
+<path d="M63.2012 20.0331C58.6258 12.347 50.2431 9.41789 50.2431 20.0331C50.243 30.6484 60.2968 52.6748 63.2012 52.6748C66.1057 52.6748 75.936 29.8522 75.936 20.0331C75.936 10.214 68.1745 12.7411 63.2012 20.0331Z" fill="#FFB9F0" stroke-width="0.660869" stroke="#7B1966"/>
+</g>
+<use xlink:href="#Repeat%20group%202_inner" transform="translate(85.9509 -23.0305) rotate(60)"/>
+<use xlink:href="#Repeat%20group%202_inner" transform="translate(148.871 39.89) rotate(120)"/>
+<use xlink:href="#Repeat%20group%202_inner" transform="translate(125.841 125.841) rotate(-180)"/>
+<use xlink:href="#Repeat%20group%202_inner" transform="translate(39.89 148.871) rotate(-120)"/>
+<use xlink:href="#Repeat%20group%202_inner" transform="translate(-23.0305 85.9509) rotate(-60)"/>
+<g filter="url(#filter0_d_106_212)">
+<path d="M71.8004 66.2404C71.8004 72.0066 68.0165 76.681 63.3488 76.681C58.6811 76.681 54.8972 72.0066 54.8972 66.2404C54.8972 60.4742 58.6811 55.7998 63.3488 55.7998C68.0165 55.7998 71.8004 60.4742 71.8004 66.2404Z" fill="#FFEFEF"/>
+</g>
+<defs>
+<filter id="filter0_d_106_212" x="54.8972" y="55.7998" width="16.9032" height="24.8811" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="4"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_106_212"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_106_212" result="shape"/>
+</filter>
+</defs>
+</svg>
