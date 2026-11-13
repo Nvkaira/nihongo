@@ -520,42 +520,66 @@
   const enc = (tokens) => encodeURIComponent(JSON.stringify([].concat(tokens)));
   const dec = (s) => JSON.parse(decodeURIComponent(s));
 
-  // ---------- Suara Ucapan & Pelafalan (Hybrid: Local SpeechSynthesis + Online Fallback) ----------
-  let jaVoice = null;
+  // ---------- Suara Ucapan & Pelafalan (Web Speech API Native + Dynamic Voice Detection) ----------
   const hasTTS = typeof window !== "undefined" && "speechSynthesis" in window;
-  const audioCache = new Map();
-  let currentAudio = null;
+  let jaVoiceCache = null;
+
+  function getJaVoice() {
+    if (!hasTTS) return null;
+    try {
+      if (jaVoiceCache) return jaVoiceCache;
+      const voices = speechSynthesis.getVoices() || [];
+      if (!voices.length) return null;
+      // 1. Voice khusus ja-JP
+      let v = voices.find((v) => /^ja[-_]jp/i.test(v.lang));
+      // 2. Voice bahasa prefix ja
+      if (!v) v = voices.find((v) => /^ja/i.test(v.lang));
+      // 3. Voice dengan nama mengandung Japanese atau Nihongo
+      if (!v) v = voices.find((v) => /japanese|nihongo/i.test(v.name));
+      if (v) jaVoiceCache = v;
+      return v;
+    } catch {
+      return null;
+    }
+  }
 
   function loadVoices() {
     try {
       if (!hasTTS) return;
-      const voices = speechSynthesis.getVoices() || [];
-      jaVoice = voices.find((v) => /^ja/i.test(v.lang)) || null;
+      jaVoiceCache = null;
+      getJaVoice();
     } catch {}
   }
+
   if (hasTTS) {
     loadVoices();
-    try { speechSynthesis.onvoiceschanged = loadVoices; } catch {}
+    try {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    } catch {}
   }
 
-  // Mobile Audio Unlocker: Membuka kunci audio policy pada sentuhan/klik pertama di HP
+  // Mobile Audio Unlocker: Membuka kunci audio policy pada sentuhan/klik pertama di HP / browser
   let audioUnlocked = false;
   function unlockAudioPolicy() {
     if (audioUnlocked) return;
     audioUnlocked = true;
     try {
-      if (hasTTS) {
-        const dummyUtter = new SpeechSynthesisUtterance("");
-        speechSynthesis.speak(dummyUtter);
+      if (typeof SFX !== "undefined" && SFX.ac) {
+        const c = SFX.ac();
+        if (c && c.state === "suspended") c.resume().catch(() => {});
       }
-      const dummyAud = new Audio();
-      dummyAud.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
-      dummyAud.play().catch(() => {});
+      if (hasTTS) {
+        if (speechSynthesis.paused) {
+          speechSynthesis.resume();
+        }
+        speechSynthesis.getVoices();
+      }
     } catch {}
   }
   if (typeof window !== "undefined") {
-    window.addEventListener("pointerdown", unlockAudioPolicy, { once: true, passive: true });
-    window.addEventListener("keydown", unlockAudioPolicy, { once: true, passive: true });
+    ["pointerdown", "touchstart", "keydown", "click"].forEach((evt) => {
+      window.addEventListener(evt, unlockAudioPolicy, { passive: true });
+    });
   }
 
   function prepareSpeechText(tokens) {
@@ -577,34 +601,7 @@
       .trim();
   }
 
-  function playOnlineTTS(text, rate = 0.85, onFallback) {
-    try {
-      hush();
-      if (audioCache.has(text)) {
-        const aud = audioCache.get(text);
-        aud.currentTime = 0;
-        aud.playbackRate = rate;
-        currentAudio = aud;
-        aud.play().catch(() => {
-          if (typeof onFallback === "function") onFallback();
-        });
-        return;
-      }
-      const encText = encodeURIComponent(text);
-      const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ja&client=tw-ob&q=${encText}`;
-      const aud = new Audio(url);
-      aud.playbackRate = rate;
-      currentAudio = aud;
-      audioCache.set(text, aud);
-      aud.play().catch(() => {
-        if (typeof onFallback === "function") onFallback();
-      });
-    } catch {
-      if (typeof onFallback === "function") onFallback();
-    }
-  }
-
-  function say(tokens, rate = 0.85) {
+  function say(tokens, rate = 0.88) {
     // Hormati toggle suara di top dock
     if (typeof SFX !== "undefined" && !SFX.on) return;
 
@@ -613,44 +610,53 @@
 
     hush();
 
-    // Prioritas 1: Jika OS memiliki suara Jepang native lokal, gunakan lokal (instan, 0 latensi)
-    if (hasTTS && jaVoice) {
+    if (hasTTS) {
       try {
+        if (speechSynthesis.paused) {
+          speechSynthesis.resume();
+        }
+
         const u = new SpeechSynthesisUtterance(text);
         u.lang = "ja-JP";
-        u.rate = rate;
-        u.voice = jaVoice;
+        u.rate = Math.max(0.5, Math.min(1.2, rate));
+        u.pitch = 1.0;
+
+        const voice = getJaVoice();
+        if (voice) {
+          u.voice = voice;
+        }
+
+        u.onerror = (e) => {
+          if (e.error !== "interrupted" && e.error !== "canceled") {
+            console.warn("[SpeechSynthesis] error:", e.error);
+          }
+        };
+
         speechSynthesis.speak(u);
+
+        // Chrome bug workaround: pastikan resume jika Chrome sempat pause
+        if (speechSynthesis.paused) {
+          speechSynthesis.resume();
+        }
         return;
-      } catch {}
+      } catch (err) {
+        console.warn("[SpeechSynthesis] gagal:", err);
+      }
     }
 
-    // Prioritas 2: Fallback ke Audio Stream online ber-akustik tinggi (jernih untuk perangkat tanpa paket ja-JP)
-    playOnlineTTS(text, rate, () => {
-      // Prioritas 3 (Offline / Network Error): Coba Web Speech bawaan meski tanpa voice ja spesifik
-      if (hasTTS) {
-        try {
-          const u = new SpeechSynthesisUtterance(text);
-          u.lang = "ja-JP";
-          u.rate = rate;
-          speechSynthesis.speak(u);
-        } catch {}
-      } else {
-        toast("Audio pelafalan tidak tersedia.");
-      }
-    });
+    toast("Fitur suara pelafalan tidak didukung browser ini.");
   }
 
   function hush() {
     if (hasTTS) {
-      try { speechSynthesis.cancel(); } catch {}
-    }
-    if (currentAudio) {
       try {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
+        if (speechSynthesis.speaking || speechSynthesis.pending) {
+          speechSynthesis.cancel();
+        }
+        if (speechSynthesis.paused) {
+          speechSynthesis.resume();
+        }
       } catch {}
-      currentAudio = null;
     }
   }
 
@@ -659,9 +665,8 @@
       say,
       hush,
       prepareSpeechText,
-      playOnlineTTS,
-      audioCache,
-      hasJaVoice: () => !!jaVoice,
+      getJaVoice,
+      hasJaVoice: () => !!getJaVoice(),
       isUnlocked: () => audioUnlocked,
     };
   }
@@ -724,6 +729,7 @@
       get on() {
         return on;
       },
+      ac,
       toggle() {
         on = !on;
         store.set("nq-sfx", on ? "1" : "0");
