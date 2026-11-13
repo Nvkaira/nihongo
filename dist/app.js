@@ -524,7 +524,9 @@
   const hasTTS = typeof window !== "undefined" && "speechSynthesis" in window;
   let jaVoiceCache = null;
 
+  let jaVoiceOverride = undefined;
   function getJaVoice() {
+    if (jaVoiceOverride !== undefined) return jaVoiceOverride;
     if (!hasTTS) return null;
     try {
       if (jaVoiceCache) return jaVoiceCache;
@@ -601,6 +603,37 @@
       .trim();
   }
 
+  const audioCache = new Map();
+  let currentAudio = null;
+
+  function getOnlineAudioUrl(text) {
+    return `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&le=jap`;
+  }
+
+  function playOnlineAudio(text, rate = 0.88) {
+    try {
+      hush();
+      let aud = audioCache.get(text);
+      if (!aud) {
+        aud = new Audio(getOnlineAudioUrl(text));
+        audioCache.set(text, aud);
+      }
+      aud.currentTime = 0;
+      aud.playbackRate = Math.max(0.6, Math.min(1.2, rate));
+      currentAudio = aud;
+      const p = aud.play();
+      if (p !== undefined) {
+        p.catch((err) => {
+          console.warn("[Audio Engine] playOnlineAudio catch:", err);
+        });
+      }
+      return true;
+    } catch (e) {
+      console.warn("[Audio Engine] playOnlineAudio error:", e);
+      return false;
+    }
+  }
+
   function say(tokens, rate = 0.88) {
     // Hormati toggle suara di top dock
     if (typeof SFX !== "undefined" && !SFX.on) return;
@@ -610,41 +643,43 @@
 
     hush();
 
-    if (hasTTS) {
+    const jaVoice = getJaVoice();
+
+    // 1. Jika perangkat memiliki suara bahasa Jepang lokal (Chrome Google 日本語, iOS Kyoko, dll)
+    if (hasTTS && jaVoice) {
       try {
         if (speechSynthesis.paused) {
           speechSynthesis.resume();
         }
 
         const u = new SpeechSynthesisUtterance(text);
-        u.lang = "ja-JP";
+        u.lang = jaVoice.lang || "ja-JP";
         u.rate = Math.max(0.5, Math.min(1.2, rate));
         u.pitch = 1.0;
+        u.voice = jaVoice;
 
-        const voice = getJaVoice();
-        if (voice) {
-          u.voice = voice;
-        }
-
+        let fallbackTriggered = false;
         u.onerror = (e) => {
-          if (e.error !== "interrupted" && e.error !== "canceled") {
-            console.warn("[SpeechSynthesis] error:", e.error);
+          if (e.error !== "interrupted" && e.error !== "canceled" && !fallbackTriggered) {
+            fallbackTriggered = true;
+            playOnlineAudio(text, rate);
           }
         };
 
         speechSynthesis.speak(u);
 
-        // Chrome bug workaround: pastikan resume jika Chrome sempat pause
         if (speechSynthesis.paused) {
           speechSynthesis.resume();
         }
         return;
       } catch (err) {
-        console.warn("[SpeechSynthesis] gagal:", err);
+        console.warn("[SpeechSynthesis] Gagal, beralih ke Online Audio:", err);
       }
     }
 
-    toast("Fitur suara pelafalan tidak didukung browser ini.");
+    // 2. Jika sistem tidak punya voice Jepang (mayoritas PC Windows & Android default di Indonesia):
+    // Putar langsung audio MP3 bahasa Jepang online yang jernih dan pasti bunyi!
+    playOnlineAudio(text, rate);
   }
 
   function hush() {
@@ -658,6 +693,13 @@
         }
       } catch {}
     }
+    if (currentAudio) {
+      try {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      } catch {}
+      currentAudio = null;
+    }
   }
 
   if (typeof window !== "undefined") {
@@ -666,7 +708,10 @@
       hush,
       prepareSpeechText,
       getJaVoice,
+      playOnlineAudio,
+      audioCache,
       hasJaVoice: () => !!getJaVoice(),
+      setJaVoiceOverride: (v) => { jaVoiceOverride = v; },
       isUnlocked: () => audioUnlocked,
     };
   }
