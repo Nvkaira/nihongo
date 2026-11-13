@@ -603,20 +603,43 @@
       .trim();
   }
 
+  const AUDIO_MAP = {
+    "わたしわがくせいです": "audio/b1_0.mp3",
+    "わたしわせんせいじゃありません": "audio/b1_1.mp3",
+    "たなかさんわかいしゃいんですか": "audio/b1_2.mp3",
+    "これわわたしのほんです": "audio/b1_3.mp3",
+    "これわじしょです": "audio/b2_0.mp3",
+    "このかさわわたしのです": "audio/b2_1.mp3",
+    "あれわだれのくるまですか": "audio/b2_2.mp3",
+    "これわなんですか": "audio/b2_3.mp3",
+    "ここわきょうしつです": "audio/b3_0.mp3",
+    "うけつけわこちらです": "audio/b3_1.mp3",
+    "おてあらいわどこですか": "audio/b3_2.mp3",
+    "しょくどうわ３かいです": "audio/b3_3.mp3",
+    "いまわ９じはんです": "audio/b4_0.mp3",
+    "まいあさごぜん６じにおきます": "audio/b4_1.mp3",
+    "きょうわすいようびです": "audio/b4_2.mp3",
+    "ぎんこうわ９じから３じまでです": "audio/b4_3.mp3",
+    "わたしわにほんえいきます": "audio/b5_0.mp3",
+    "でんしゃでとうきょうえいきます": "audio/b5_1.mp3",
+    "いつにほんえいきますか": "audio/b5_2.mp3",
+    "ともだちとデパートえいきました": "audio/b5_3.mp3",
+    "わたしわごはんをたべます": "audio/b6_0.mp3",
+    "レストランでごはんをたべます": "audio/b6_1.mp3",
+    "いっしょにおちゃをのみませんか": "audio/b6_2.mp3",
+    "ちょっとやすみましょう": "audio/b6_3.mp3"
+  };
+
   const audioCache = new Map();
   let currentAudio = null;
 
-  function getOnlineAudioUrl(text) {
-    return `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&le=jap`;
-  }
-
-  function playOnlineAudio(text, rate = 0.88) {
+  function playLocalAudio(src, rate = 0.88) {
     try {
       hush();
-      let aud = audioCache.get(text);
+      let aud = audioCache.get(src);
       if (!aud) {
-        aud = new Audio(getOnlineAudioUrl(text));
-        audioCache.set(text, aud);
+        aud = new Audio(src);
+        audioCache.set(src, aud);
       }
       aud.currentTime = 0;
       aud.playbackRate = Math.max(0.6, Math.min(1.2, rate));
@@ -624,28 +647,34 @@
       const p = aud.play();
       if (p !== undefined) {
         p.catch((err) => {
-          console.warn("[Audio Engine] playOnlineAudio catch:", err);
+          console.warn("[Audio Engine] playLocalAudio catch:", err);
         });
       }
       return true;
     } catch (e) {
-      console.warn("[Audio Engine] playOnlineAudio error:", e);
+      console.warn("[Audio Engine] playLocalAudio error:", e);
       return false;
     }
   }
 
   function say(tokens, rate = 0.88) {
-    // Hormati toggle suara di top dock
+    // 1. Hormati toggle suara di top dock
     if (typeof SFX !== "undefined" && !SFX.on) return;
 
+    // 2. Siapkan teks yang dinormalisasi
     const text = prepareSpeechText(tokens);
     if (!text) return;
 
     hush();
 
-    const jaVoice = getJaVoice();
+    // Prioritas 1: Jika teks memiliki file audio lokal yang sudah di-bundle (100% bebas blokir ORB, 100% bebas izin browser, jernih)
+    if (AUDIO_MAP[text]) {
+      playLocalAudio(AUDIO_MAP[text], rate);
+      return;
+    }
 
-    // 1. Jika perangkat memiliki suara bahasa Jepang lokal (Chrome Google 日本語, iOS Kyoko, dll)
+    // Prioritas 2: Jika ada voice Jepang asli terpasang di browser (Chrome dengan Google 日本語, iOS dengan Kyoko, dsb)
+    const jaVoice = getJaVoice();
     if (hasTTS && jaVoice) {
       try {
         if (speechSynthesis.paused) {
@@ -658,14 +687,6 @@
         u.pitch = 1.0;
         u.voice = jaVoice;
 
-        let fallbackTriggered = false;
-        u.onerror = (e) => {
-          if (e.error !== "interrupted" && e.error !== "canceled" && !fallbackTriggered) {
-            fallbackTriggered = true;
-            playOnlineAudio(text, rate);
-          }
-        };
-
         speechSynthesis.speak(u);
 
         if (speechSynthesis.paused) {
@@ -673,13 +694,18 @@
         }
         return;
       } catch (err) {
-        console.warn("[SpeechSynthesis] Gagal, beralih ke Online Audio:", err);
+        console.warn("[SpeechSynthesis] Gagal:", err);
       }
     }
 
-    // 2. Jika sistem tidak punya voice Jepang (mayoritas PC Windows & Android default di Indonesia):
-    // Putar langsung audio MP3 bahasa Jepang online yang jernih dan pasti bunyi!
-    playOnlineAudio(text, rate);
+    // Prioritas 3: Fallback bawaan SpeechSynthesis jika tanpa voice khusus
+    if (hasTTS) {
+      try {
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "ja-JP";
+        speechSynthesis.speak(u);
+      } catch {}
+    }
   }
 
   function hush() {
@@ -708,7 +734,8 @@
       hush,
       prepareSpeechText,
       getJaVoice,
-      playOnlineAudio,
+      playLocalAudio,
+      AUDIO_MAP,
       audioCache,
       hasJaVoice: () => !!getJaVoice(),
       setJaVoiceOverride: (v) => { jaVoiceOverride = v; },
