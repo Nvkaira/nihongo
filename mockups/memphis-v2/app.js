@@ -2243,22 +2243,6 @@
           <div class="auth-toggle-hint" id="authToggleHint">
             Belum punya akun? <button type="button" class="auth-toggle-btn" id="btnSwitchMode">Daftar sekarang</button>
           </div>
-
-          <div class="login-divider-wrap" aria-hidden="true">
-            <span class="login-divider-line"></span>
-            <span class="login-divider-text">ATAU</span>
-            <span class="login-divider-line"></span>
-          </div>
-
-          <button type="button" class="btn-google-login" id="btnGoogleAuth" aria-label="Masuk dengan Google">
-            <svg class="google-btn-icon" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            <span class="google-btn-text" id="googleBtnText">MASUK DENGAN GOOGLE</span>
-          </button>
         </div>
       </div>
     `;
@@ -2272,7 +2256,6 @@
       const title = modalRoot.querySelector("#loginModalTitle");
       const sub = modalRoot.querySelector("#loginModalSub");
       const pass = modalRoot.querySelector("#loginPass");
-      const gText = modalRoot.querySelector("#googleBtnText");
 
       if (tabLogin) {
         tabLogin.classList.toggle("is-active", mode === "login");
@@ -2288,7 +2271,6 @@
         if (pass) pass.setAttribute("autocomplete", "current-password");
         if (title) title.textContent = "Masuk Akun";
         if (sub) sub.textContent = "Lanjutkan progres petualanganmu";
-        if (gText) gText.textContent = "MASUK DENGAN GOOGLE";
         if (hint) {
           hint.innerHTML = 'Belum punya akun? <button type="button" class="auth-toggle-btn" id="btnSwitchMode">Daftar sekarang</button>';
           wireSwitch();
@@ -2298,7 +2280,6 @@
         if (pass) pass.setAttribute("autocomplete", "new-password");
         if (title) title.textContent = "Daftar Akun Baru";
         if (sub) sub.textContent = "Mulai petualangan bahasa Jepangmu";
-        if (gText) gText.textContent = "DAFTAR DENGAN GOOGLE";
         if (hint) {
           hint.innerHTML = 'Sudah punya akun? <button type="button" class="auth-toggle-btn" id="btnSwitchMode">Masuk ke akun</button>';
           wireSwitch();
@@ -2339,14 +2320,6 @@
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         handleAuthSubmit(modalRoot, authMode);
-      });
-    }
-
-    const btnGoogle = modalRoot.querySelector("#btnGoogleAuth");
-    if (btnGoogle) {
-      btnGoogle.addEventListener("click", () => {
-        SFX.tap();
-        openGoogleAuthSelector(modalRoot);
       });
     }
 
@@ -2538,107 +2511,6 @@
       Buddy.say(`Senang melihatmu kembali, ${S.user.name}! Siap bertualang?`, 3000);
       closeLoginModal();
     }
-  }
-
-  function openGoogleAuthSelector(modalRoot) {
-    const card = modalRoot.querySelector(".login-modal-card");
-    if (!card) return;
-
-    let selector = card.querySelector(".google-select-overlay");
-    if (!selector) {
-      selector = document.createElement("div");
-      selector.className = "google-select-overlay";
-      card.appendChild(selector);
-    }
-
-    selector.innerHTML = `
-      <div class="google-select-card">
-        <div class="google-select-header">
-          <svg width="24" height="24" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-          </svg>
-          <div class="google-select-title">Pilih Akun Google</div>
-        </div>
-        <div class="google-account-list">
-          <button type="button" class="google-account-item" data-gname="Kakha" data-gemail="kakha.nihongo@gmail.com">
-            <div class="google-user-avatar">K</div>
-            <div>
-              <div class="google-account-name">Kakha</div>
-              <div class="google-account-email">kakha.nihongo@gmail.com</div>
-            </div>
-          </button>
-          <button type="button" class="google-account-item" data-gname="Petualang Nihongo" data-gemail="quest.learner@gmail.com">
-            <div class="google-user-avatar" style="background:#10B981;">P</div>
-            <div>
-              <div class="google-account-name">Petualang Nihongo</div>
-              <div class="google-account-email">quest.learner@gmail.com</div>
-            </div>
-          </button>
-        </div>
-        <button type="button" class="btn" data-login-act="cancel-google" style="background:#F3F4F6; color:#374151; border:1.5px solid #D1D5DB; border-radius:999px; height:36px; font-weight:700;">Batal</button>
-      </div>
-    `;
-
-    selector.addEventListener("click", (e) => {
-      const cancel = e.target.closest('[data-login-act="cancel-google"]');
-      if (cancel || e.target === selector) {
-        SFX.tap();
-        selector.remove();
-        return;
-      }
-
-      const item = e.target.closest(".google-account-item");
-      if (item) {
-        const name = item.dataset.gname;
-        const email = item.dataset.gemail;
-
-        selector.innerHTML = `
-          <div class="google-select-card" style="text-align:center;">
-            <div class="google-loading-state">
-              <div class="google-spinner"></div>
-              <div style="font-family:var(--disp); font-size:1.05rem; font-weight:700; color:var(--ink);">Menghubungkan ke Google...</div>
-              <div style="font-size:0.85rem; color:#6B7280;">Mengautentikasi ${email}</div>
-            </div>
-          </div>
-        `;
-        SFX.tap();
-
-        setTimeout(() => {
-          const all = getAllAccounts();
-          const cleanEmail = email.toLowerCase().trim();
-          const isNewGoogle = !all[cleanEmail];
-
-          const userObj = {
-            name: name,
-            email: email,
-            provider: "google",
-            createdAt: all[cleanEmail]?.createdAt || Date.now(),
-            loginAt: Date.now(),
-          };
-          saveAccount(userObj);
-
-          S.user = { name: userObj.name, email: userObj.email, provider: "google", loginAt: Date.now() };
-          store.set("nq-user", JSON.stringify(S.user));
-          updateTopDockAuth();
-
-          loadProgress(isNewGoogle);
-          if (S.screen === "map") renderMap();
-
-          SFX.unlock();
-          if (isNewGoogle) {
-            toast(`Berhasil mendaftar dengan Google: ${name}! ✨`);
-            Buddy.say(`Akun Google terhubung! Selamat datang, ${name}! 🎉`, 3000);
-          } else {
-            toast(`Selamat datang kembali, ${name}! ✨`);
-            Buddy.say(`Akun Google terhubung! Siap melanjutkan petualangan?`, 3000);
-          }
-          closeLoginModal();
-        }, 850);
-      }
-    });
   }
 
   function openAccountModal() {
