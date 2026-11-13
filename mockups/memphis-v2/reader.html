@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23FF5C8A' stroke='%231D1B3A' stroke-width='5'/%3E%3Ctext x='32' y='43' font-size='32' font-weight='700' text-anchor='middle' fill='%23FFF4DE' font-family='sans-serif'%3E%E3%81%82%3C/text%3E%3C/svg%3E">
+  <title>Ruang Fokus — Minna no Nihongo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/base.css">
+  <style>
+    :root {
+      --bg: #FFF4DE;
+      --ink: #1D1B3A;
+      --white: #FFFFFF;
+      --pink: #FF5C8A;
+      --teal: #14C3A2;
+      --yellow: #FFC63D;
+      --blue: #5B8CFF;
+      --wood: #371C0D;
+      --wood-mid: #AD7258;
+      --spring: cubic-bezier(.3, 1.6, .5, 1);
+      --o: 2.5px solid var(--ink);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      background-color: var(--bg);
+      background-image: radial-gradient(rgba(29, 27, 58, 0.13) 1.6px, transparent 1.9px);
+      background-size: 22px 22px;
+      background-attachment: fixed;
+      color: var(--ink);
+      font-family: "Fredoka", "Zen Maru Gothic", sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Floating Sakura Petals */
+    .sakura-ambient {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .petal {
+      position: absolute;
+      top: -40px;
+      width: 22px;
+      height: 22px;
+      opacity: 0.72;
+      animation: petalFall linear infinite;
+    }
+    @keyframes petalFall {
+      0% { transform: translateY(-40px) translateX(0) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.78; }
+      90% { opacity: 0.78; }
+      100% { transform: translateY(108vh) translateX(65px) rotate(320deg); opacity: 0; }
+    }
+
+    /* Sticky Top Focus Toolbar */
+    .reader-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      padding: 10px 16px;
+      background: linear-gradient(180deg, rgba(255, 244, 222, 0.96) 76%, rgba(255, 244, 222, 0));
+      backdrop-filter: blur(4px);
+    }
+    .reader-bar-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--white);
+      border: var(--o);
+      border-radius: 22px;
+      box-shadow: 4px 4px 0 var(--ink);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .bar-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .r-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 38px;
+      padding: 6px 14px;
+      border: 2.2px solid var(--ink);
+      border-radius: 999px;
+      background: var(--white);
+      box-shadow: 2.5px 2.5px 0 var(--ink);
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: transform 0.14s var(--spring), box-shadow 0.12s, background 0.15s;
+    }
+    .r-btn:hover { transform: translateY(-2px); box-shadow: 3.5px 4.5px 0 var(--ink); background: #FFF7D6; }
+    .r-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+    .r-btn--back { background: var(--pink); color: #FFF; }
+    .r-btn--back:hover { background: #FF4076; }
+
+    .color-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 2px solid var(--ink);
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: var(--bg);
+    }
+    .color-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1.8px solid var(--ink);
+    }
+
+    /* Main Book Desk */
+    .reader-main {
+      position: relative;
+      z-index: 2;
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 6px 16px 26px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Book Viewport (fits desktop height cleanly alongside dots & hint) */
+    .book-viewport {
+      position: relative;
+      width: min(94vw, calc((100dvh - 195px) * 0.6258), 530px);
+      min-width: 260px;
+      aspect-ratio: 4450 / 7111;
+      perspective: 1600px;
+      transition: width 0.35s var(--spring);
+      animation: bookEnter 0.55s var(--spring);
+    }
+    .book-viewport.is-zoomed {
+      width: min(95vw, 760px);
+    }
+    @keyframes bookEnter {
+      from { opacity: 0; transform: translateY(24px) scale(0.93); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .book-stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 22px;
+      filter: drop-shadow(0 16px 30px rgba(55, 28, 13, 0.25));
+      transform-style: preserve-3d;
+    }
+
+    /* Individual Cropped SVG Viewport Layer */
+    .slide-crop {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: 18px;
+      transform-origin: center center;
+      transition: opacity 0.16s ease;
+    }
+    .slide-crop.is-turning {
+      opacity: 0.94;
+    }
+    .slide-crop img {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      max-width: none;
+      display: block;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    /* Outgoing page exit & incoming settle */
+    .slide-crop.is-entering-next {
+      animation: settleInNext 0.52s var(--spring) forwards;
+    }
+    .slide-crop.is-entering-back {
+      animation: settleInBack 0.52s var(--spring) forwards;
+    }
+    @keyframes settleInNext {
+      0% { opacity: 0.7; transform: scale(0.97) rotateY(-8deg); }
+      70% { opacity: 1; transform: scale(1.012) rotateY(1deg); }
+      100% { opacity: 1; transform: scale(1) rotateY(0); }
+    }
+    @keyframes settleInBack {
+      0% { opacity: 0.7; transform: scale(0.97) rotateY(8deg); }
+      70% { opacity: 1; transform: scale(1.012) rotateY(-1deg); }
+      100% { opacity: 1; transform: scale(1) rotateY(0); }
+    }
+
+    /* Animation Overlay Layer (Animasi 1 #FADEC0 & Animasi 2 #FBEFD9) */
+    .anim-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 12;
+      display: none;
+      transform-style: preserve-3d;
+    }
+    .anim-layer.is-playing {
+      display: block;
+    }
+    .anim-sheet-crop {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: 18px;
+    }
+    .anim-sheet-crop img {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      max-width: none;
+      display: block;
+    }
+    .anim-layer.turn-next .anim-sheet-crop {
+      animation: turnFlyNext 0.54s cubic-bezier(.35, .05, .25, 1) forwards;
+    }
+    .anim-layer.turn-back .anim-sheet-crop {
+      animation: turnFlyBack 0.54s cubic-bezier(.35, .05, .25, 1) forwards;
+    }
+    @keyframes turnFlyNext {
+      0% { opacity: 0.2; transform: translateX(2%) rotateY(8deg) scale(1.08, 1.04); }
+      22% { opacity: 1; transform: translateX(-2%) rotateY(0deg) scale(1.08, 1.04); }
+      65% { opacity: 0.98; transform: translateX(-26%) rotateY(-18deg) scale(1.03); }
+      100% { opacity: 0; transform: translateX(-48%) rotateY(-36deg) scale(0.96); }
+    }
+    @keyframes turnFlyBack {
+      0% { opacity: 0.2; transform: translateX(-2%) rotateY(-8deg) scale(1.08, 1.04); }
+      22% { opacity: 1; transform: translateX(2%) rotateY(0deg) scale(1.08, 1.04); }
+      65% { opacity: 0.98; transform: translateX(26%) rotateY(18deg) scale(1.03); }
+      100% { opacity: 0; transform: translateX(48%) rotateY(36deg) scale(0.96); }
+    }
+
+    /* Hitboxes over exact Figma Back / Next / End Buttons */
+    .hitbox-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 15;
+      pointer-events: none;
+    }
+    .book-hit-btn {
+      position: absolute;
+      pointer-events: auto;
+      border-radius: 999px;
+      cursor: pointer;
+      background: transparent;
+      border: 2px solid transparent;
+      transition: transform 0.16s var(--spring), box-shadow 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .book-hit-btn:hover:not(.is-disabled-hit) {
+      background: rgba(255, 198, 61, 0.22);
+      border-color: rgba(221, 114, 63, 0.75);
+      box-shadow: 0 0 18px rgba(255, 198, 61, 0.65);
+      transform: translateY(-2px) scale(1.04);
+    }
+    .book-hit-btn.is-disabled-hit {
+      background: rgba(251, 239, 217, 0.62);
+      border-color: rgba(88, 62, 38, 0.24);
+      cursor: default;
+    }
+    .book-hit-btn:active:not(.is-disabled-hit) {
+      transform: translateY(1px) scale(0.95);
+    }
+    .book-hit-btn.is-end-glow {
+      animation: endPulseGlow 1.8s ease-in-out infinite;
+    }
+    @keyframes endPulseGlow {
+      0%, 100% { box-shadow: 0 0 0 rgba(20, 195, 162, 0); }
+      50% { box-shadow: 0 0 22px rgba(20, 195, 162, 0.75), inset 0 0 10px rgba(255, 255, 255, 0.5); }
+    }
+
+    /* Bottom Progress Dots Bar */
+    .dots-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--white);
+      border: var(--o);
+      border-radius: 999px;
+      box-shadow: 3px 3px 0 var(--ink);
+    }
+    .page-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid var(--ink);
+      background: #EFE6D2;
+      cursor: pointer;
+      transition: transform 0.2s var(--spring), background 0.2s, width 0.2s;
+    }
+    .page-dot:hover { transform: scale(1.25); }
+    .page-dot.is-active {
+      width: 28px;
+      border-radius: 999px;
+      background: var(--pink);
+    }
+
+    /* Mini Azu Reader Cheerleader */
+    .reader-azu {
+      position: fixed;
+      right: 14px;
+      bottom: 12px;
+      width: 96px;
+      z-index: 35;
+      pointer-events: none;
+    }
+    .reader-azu-btn {
+      width: 100%;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+    .reader-azu-bubble {
+      position: absolute;
+      bottom: calc(100% + 2px);
+      right: 6px;
+      width: max-content;
+      max-width: 220px;
+      padding: 8px 12px;
+      background: var(--white);
+      border: var(--o);
+      border-radius: 16px;
+      box-shadow: 3px 3px 0 var(--ink);
+      font-size: 0.84rem;
+      font-weight: 700;
+      opacity: 0;
+      transform: translateY(8px) scale(0.85);
+      transition: opacity 0.2s, transform 0.3s var(--spring);
+    }
+    .reader-azu-bubble.is-on { opacity: 1; transform: none; }
+    .seal-anim { animation: sealBob 3.2s ease-in-out infinite; transform-origin: 100px 158px; }
+    .reader-azu.is-hop .seal-anim { animation: sealHop 0.48s var(--spring); }
+    @keyframes sealBob { 50% { transform: scale(1.015, 1.04); } }
+    @keyframes sealHop { 0%, 100% { transform: none; } 50% { transform: translateY(-16px) scale(0.96, 1.06); } }
+
+    .toast-pill {
+      position: fixed;
+      left: 50%;
+      bottom: 80px;
+      transform: translateX(-50%) translateY(16px);
+      background: var(--ink);
+      color: var(--white);
+      padding: 9px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 60;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      transition: opacity 0.22s, transform 0.28s var(--spring);
+    }
+    .toast-pill.is-on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 600px) {
+      .reader-bar-inner { padding: 8px 10px; justify-content: center; }
+      .reader-main { padding: 4px 10px 88px; gap: 6px; }
+      .book-viewport { width: min(92vw, calc((100dvh - 305px) * 0.6258), 400px); }
+      .reader-main > p { font-size: 0.72rem !important; line-height: 1.25; }
+      .reader-azu { width: 60px; right: 8px; bottom: 6px; }
+      .reader-azu-bubble {
+        bottom: 8px;
+        right: calc(100% + 8px);
+        max-width: min(64vw, 220px);
+        font-size: 0.74rem;
+        padding: 6px 10px;
+      }
+      .toast-pill { bottom: 82px; max-width: 90vw; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sakura-ambient" id="sakuraLayer" aria-hidden="true"></div>
+
+  <header class="reader-topbar">
+    <div class="reader-bar-inner">
+      <div class="bar-group">
+        <button type="button" class="r-btn r-btn--back" id="btnCloseToMap">← Kembali ke Peta</button>
+      </div>
+
+      <div class="bar-group">
+        <span class="color-chip" id="pageStatusChip">
+          <span class="color-dot" id="pageColorDot" style="background:#FBEFD9"></span>
+          <span id="pageNumLabel">Hal 1 / 6</span>
+        </span>
+        <button type="button" class="r-btn" id="btnZoom">🔍 Perbesar</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="reader-main">
+    <div class="book-viewport" id="bookViewport">
+      <div class="book-stage" id="bookStage">
+        <div class="slide-crop" id="slideCrop">
+          <img id="bookImg" src="" alt="Halaman Minna no Nihongo" />
+        </div>
+
+        <div class="anim-layer" id="animLayer">
+          <div class="anim-sheet-crop" id="animSheetCrop">
+            <img id="animImg" src="" alt="" />
+          </div>
+        </div>
+
+        <div class="hitbox-layer" id="hitboxLayer">
+          <button type="button" class="book-hit-btn" id="btnBackHit" aria-label="Halaman Sebelumnya" title="Back (Halaman Sebelumnya)"></button>
+          <button type="button" class="book-hit-btn" id="btnNextHit" aria-label="Halaman Berikutnya" title="Next (Halaman Berikutnya)"></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dots-pill" id="dotsPill" role="navigation" aria-label="Navigasi Halaman"></div>
+    <p style="font-size:0.8rem;font-weight:600;color:#6E6A80;margin:0;text-align:center">
+      Klik tombol <b>Back</b> / <b>Next</b> / <b>End</b> pada buku (atau tekan <b>◀ / ▶</b> di keyboard)
+    </p>
+  </main>
+
+  <div class="reader-azu" id="readerAzu">
+    <div class="reader-azu-bubble" id="azuBubble">Semangat membaca! 📖✨</div>
+    <button type="button" class="reader-azu-btn" id="btnAzuCheer" aria-label="Maskot Azu">
+      <svg viewBox="0 0 200 175" width="100%">
+        <ellipse cx="100" cy="163" rx="64" ry="8" fill="rgba(29,27,58,.16)"/>
+        <g class="seal-anim">
+          <path d="M148 146c14-4 28-14 38-9 6 4 1 12-7 13 8 3 8 11 0 12-11 1-22-6-31-9z" fill="#DCE6F1" stroke="#1D1B3A" stroke-width="3.5" stroke-linejoin="round"/>
+          <path d="M100 26c40 0 64 34 67 72 3 38-22 56-67 56s-70-18-67-56c3-38 27-72 67-72z" fill="#FFF" stroke="#1D1B3A" stroke-width="4"/>
+          <ellipse cx="100" cy="127" rx="38" ry="21" fill="#EAF1F9"/>
+          <ellipse cx="78" cy="80" rx="7.5" ry="9" fill="#1D1B3A"/><circle cx="80.8" cy="76.2" r="2.8" fill="#FFF"/>
+          <ellipse cx="122" cy="80" rx="7.5" ry="9" fill="#1D1B3A"/><circle cx="124.8" cy="76.2" r="2.8" fill="#FFF"/>
+          <ellipse cx="63" cy="97" rx="10" ry="6" fill="#FF8FAB" opacity="0.6"/>
+          <ellipse cx="137" cy="97" rx="10" ry="6" fill="#FF8FAB" opacity="0.6"/>
+          <path d="M93 90q7-4 14 0q-2 7-7 8q-5-1-7-8z" fill="#1D1B3A"/>
+          <path d="M89 102q5.5 6 11 0q5.5 6 11 0" fill="none" stroke="#1D1B3A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="m134 28 3.4 6.8 7.5 1-5.5 5.2 1.4 7.4-6.8-3.6-6.8 3.6 1.4-7.4-5.5-5.2 7.5-1z" fill="#FFC63D" stroke="#1D1B3A" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M48 116c-15 3-24 15-20 22 4 6 17-1 28-12z" fill="#DCE6F1" stroke="#1D1B3A" stroke-width="3.5" stroke-linejoin="round"/>
+          <path d="M152 116c15 3 24 15 20 22-4 6-17-1-28-12z" fill="#DCE6F1" stroke="#1D1B3A" stroke-width="3.5" stroke-linejoin="round"/>
+        </g>
+      </svg>
+    </button>
+  </div>
+
+  <div class="toast-pill" id="toastPill"></div>
+
+  <script src="reader_manifest.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      const params = new URLSearchParams(window.location.search);
+      let bab = Math.min(5, Math.max(1, parseInt(params.get("bab") || "1", 10) || 1));
+      let mode = params.get("mode") === "jep" ? "jep" : "materi";
+      let slideIdx = 0;
+      let isAnimating = false;
+      let soundOn = localStorage.getItem("nq-sfx") !== "0";
+
+      // ---------- WebAudio SFX (Page Rustle + Cute Chimes) ----------
+      const SFX = (() => {
+        let ctx = null;
+        function ac() {
+          if (!soundOn) return null;
+          if (!ctx && (window.AudioContext || window.webkitAudioContext)) {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            ctx = new AC();
+          }
+          if (ctx && ctx.state === "suspended") ctx.resume().catch(() => {});
+          return ctx;
+        }
+        function tone(f, t = 0, dur = 0.14, vol = 0.14) {
+          const a = ac();
+          if (!a) return;
+          const now = a.currentTime + t;
+          const o = a.createOscillator();
+          const g = a.createGain();
+          o.frequency.setValueAtTime(f, now);
+          g.gain.setValueAtTime(0.0001, now);
+          g.gain.exponentialRampToValueAtTime(vol, now + 0.015);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+          o.connect(g);
+          g.connect(a.destination);
+          o.start(now);
+          o.stop(now + dur + 0.02);
+        }
+        function paperFlip(isPeach) {
+          const a = ac();
+          if (!a) return;
+          const dur = 0.22;
+          const buf = a.createBuffer(1, a.sampleRate * dur, a.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < data.length; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.sin((i / data.length) * Math.PI);
+          }
+          const src = a.createBufferSource();
+          src.buffer = buf;
+          const filter = a.createBiquadFilter();
+          filter.type = "bandpass";
+          filter.frequency.value = isPeach ? 1600 : 2100;
+          filter.Q.value = 1.4;
+          const gain = a.createGain();
+          gain.gain.value = 0.22;
+          src.connect(filter);
+          filter.connect(gain);
+          gain.connect(a.destination);
+          src.start();
+          tone(isPeach ? 520 : 620, 0.05, 0.12, 0.08);
+        }
+        function finish() {
+          [523.25, 659.25, 783.99, 1046.5].forEach((f, idx) => tone(f, idx * 0.075, 0.24, 0.16));
+        }
+        function pop() { tone(480, 0, 0.09, 0.1); }
+        return { paperFlip, finish, pop };
+      })();
+
+      // ---------- Ambient Sakura Petals ----------
+      const sakuraLayer = document.getElementById("sakuraLayer");
+      for (let i = 0; i < 10; i++) {
+        const el = document.createElement("div");
+        el.className = "petal";
+        el.style.left = (Math.random() * 96) + "vw";
+        el.style.animationDuration = (9 + Math.random() * 8) + "s";
+        el.style.animationDelay = (-Math.random() * 12) + "s";
+        el.innerHTML = `<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M12 2C16 7 20 12 16 19C13 22 10 21 8 18C5 13 8 6 12 2Z" fill="#FFB3C6" stroke="#1D1B3A" stroke-width="1.6"/></svg>`;
+        sakuraLayer.appendChild(el);
+      }
+
+      // ---------- Azu Cheer & Toast ----------
+      const azuEl = document.getElementById("readerAzu");
+      const azuBubble = document.getElementById("azuBubble");
+      let azuT, toastT;
+      function azuSay(msg, ms = 2600) {
+        azuBubble.textContent = msg;
+        azuBubble.classList.add("is-on");
+        azuEl.classList.remove("is-hop");
+        void azuEl.offsetWidth;
+        azuEl.classList.add("is-hop");
+        clearTimeout(azuT);
+        azuT = setTimeout(() => azuBubble.classList.remove("is-on"), ms);
+      }
+      function showToast(msg) {
+        const t = document.getElementById("toastPill");
+        t.textContent = msg;
+        t.classList.add("is-on");
+        clearTimeout(toastT);
+        toastT = setTimeout(() => t.classList.remove("is-on"), 2200);
+      }
+
+      // ---------- Confetti Canvas on End ----------
+      function fireEndConfetti() {
+        const c = document.createElement("canvas");
+        c.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:55;";
+        document.body.appendChild(c);
+        const ctx = c.getContext("2d");
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+        const COLS = ["#FF5C8A", "#14C3A2", "#FFC63D", "#5B8CFF", "#FFB3C6"];
+        const parts = Array.from({ length: 42 }, (_, i) => ({
+          x: c.width * 0.5,
+          y: c.height * 0.65,
+          vx: (Math.random() - 0.5) * 16,
+          vy: -Math.random() * 14 - 4,
+          g: 0.35,
+          color: COLS[i % COLS.length],
+          sz: 8 + Math.random() * 6,
+          rot: Math.random() * Math.PI,
+        }));
+        function step() {
+          ctx.clearRect(0, 0, c.width, c.height);
+          let alive = false;
+          for (const p of parts) {
+            p.x += p.vx; p.y += p.vy; p.vy += p.g; p.rot += 0.14;
+            if (p.y < c.height + 40) alive = true;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot);
+            ctx.fillStyle = p.color;
+            ctx.strokeStyle = "#1D1B3A";
+            ctx.lineWidth = 1.5;
+            ctx.fillRect(-p.sz / 2, -p.sz / 3, p.sz, p.sz * 0.66);
+            ctx.strokeRect(-p.sz / 2, -p.sz / 3, p.sz, p.sz * 0.66);
+            ctx.restore();
+          }
+          if (alive) requestAnimationFrame(step);
+          else c.remove();
+        }
+        step();
+      }
+
+      // ---------- Animation Assets Config (Animasi 1 -> #FADEC0, Animasi 2 -> #FBEFD9) ----------
+      const ANIM_CONFIG = {
+        "#FADEC0": {
+          file: "assets/u10/anim_to_fadec0.svg", // Animasi 1 perpindahan ke media warna FADEC0.svg
+          totalW: 19136,
+          cropW: 3960,
+          sheetX: 9650, // Tilted #FADEC0 turning leaf frame centered & scaled to cover gap
+        },
+        "#FBEFD9": {
+          file: "assets/u10/anim_to_fbefd9.svg", // animasi 2 perpindahan ke media warna FBEFD9.svg
+          totalW: 20007,
+          cropW: 4180,
+          sheetX: 10240, // Tilted #FBEFD9 turning leaf frame centered & scaled to cover gap
+        },
+      };
+
+      const bookViewport = document.getElementById("bookViewport");
+      const slideCrop = document.getElementById("slideCrop");
+      const bookImg = document.getElementById("bookImg");
+      const animLayer = document.getElementById("animLayer");
+      const animImg = document.getElementById("animImg");
+      const btnBackHit = document.getElementById("btnBackHit");
+      const btnNextHit = document.getElementById("btnNextHit");
+
+      function getDeck() {
+        const key = `b${bab}_${mode}`;
+        return window.READER_MANIFEST[key];
+      }
+
+      function applySlideCrop(idx, animDir) {
+        const deck = getDeck();
+        const sl = deck.slides[idx];
+        bookViewport.style.aspectRatio = `${deck.cropW} / ${deck.totalH}`;
+
+        const imgSrc = "assets/u10/" + deck.file;
+        if (!bookImg.getAttribute("src") || !bookImg.getAttribute("src").endsWith(deck.file)) {
+          bookImg.src = imgSrc;
+        }
+        bookImg.style.width = ((deck.totalW / deck.cropW) * 100) + "%";
+        bookImg.style.left = (-(sl.cropX / deck.cropW) * 100) + "%";
+
+        if (animDir) {
+          slideCrop.classList.remove("is-entering-next", "is-entering-back");
+          void slideCrop.offsetWidth;
+          slideCrop.classList.add(animDir > 0 ? "is-entering-next" : "is-entering-back");
+        }
+
+        // Update Topbar & Dots UI
+        document.title = `Bab ${bab} (${mode === "materi" ? "Materi Indo" : "Full Jepang"}) — Hal ${idx + 1}/${deck.slides.length}`;
+        document.getElementById("pageColorDot").style.background = sl.color;
+        document.getElementById("pageNumLabel").textContent = `Hal ${idx + 1} / ${deck.slides.length}`;
+
+        // Update interactive Back hitbox
+        if (sl.back) {
+          btnBackHit.hidden = false;
+          btnBackHit.style.left = sl.back.l + "%";
+          btnBackHit.style.top = sl.back.t + "%";
+          btnBackHit.style.width = sl.back.w + "%";
+          btnBackHit.style.height = sl.back.h + "%";
+          btnBackHit.style.opacity = "1";
+          btnBackHit.classList.toggle("is-disabled-hit", idx === 0);
+          btnBackHit.setAttribute("aria-disabled", idx === 0 ? "true" : "false");
+        } else {
+          btnBackHit.hidden = true;
+          btnBackHit.classList.remove("is-disabled-hit");
+        }
+
+        // Update interactive Next / End hitbox
+        const isLast = idx === deck.slides.length - 1;
+        if (sl.next) {
+          btnNextHit.hidden = false;
+          btnNextHit.style.left = sl.next.l + "%";
+          btnNextHit.style.top = sl.next.t + "%";
+          btnNextHit.style.width = sl.next.w + "%";
+          btnNextHit.style.height = sl.next.h + "%";
+          btnNextHit.classList.toggle("is-end-glow", isLast);
+          btnNextHit.setAttribute("aria-label", isLast ? "Selesai dan Kembali ke Tab Utama" : "Halaman Berikutnya");
+          btnNextHit.title = isLast ? "End — Kembali ke Peta Utama" : "Next — Halaman Berikutnya";
+        } else {
+          btnNextHit.hidden = true;
+        }
+
+        // Render bottom progress dots
+        const dotsPill = document.getElementById("dotsPill");
+        dotsPill.innerHTML = deck.slides
+          .map((_, i) => `<button type="button" class="page-dot ${i === idx ? "is-active" : ""}" data-page="${i}" aria-label="Halaman ${i + 1}"></button>`)
+          .join("");
+
+        if (isLast) {
+          azuSay("Halaman terakhir nih! Tekan End untuk kembali ke peta~ 🎉", 3400);
+        }
+      }
+
+      // Core Transition: picks Animasi 1 (#FADEC0) or Animasi 2 (#FBEFD9) based on destination page color!
+      function goSlide(targetIdx, forcedDir) {
+        const deck = getDeck();
+        if (targetIdx < 0 || targetIdx >= deck.slides.length || targetIdx === slideIdx || isAnimating) return;
+
+        const dir = forcedDir || (targetIdx > slideIdx ? 1 : -1);
+        const destColor = deck.slides[targetIdx].color; // "#FADEC0" or "#FBEFD9"
+        const cfg = ANIM_CONFIG[destColor] || ANIM_CONFIG["#FBEFD9"];
+
+        isAnimating = true;
+        SFX.paperFlip(destColor === "#FADEC0");
+
+        animImg.src = cfg.file;
+        animImg.style.width = ((cfg.totalW / cfg.cropW) * 100) + "%";
+        animImg.style.left = (-(cfg.sheetX / cfg.cropW) * 100) + "%";
+
+        slideCrop.classList.add("is-turning");
+        animLayer.classList.remove("turn-next", "turn-back", "is-playing");
+        void animLayer.offsetWidth;
+        animLayer.classList.add("is-playing", dir > 0 ? "turn-next" : "turn-back");
+
+        // Ketika membalik ke depan, halaman baru langsung disiapkan di layer bawah
+        // sehingga lembaran yang terbuka memperlihatkan halaman baru (bukan halaman lama yang mengintip)
+        if (dir > 0) {
+          slideIdx = targetIdx;
+          applySlideCrop(slideIdx, null);
+        }
+
+        setTimeout(() => {
+          if (dir < 0) {
+            slideIdx = targetIdx;
+            applySlideCrop(slideIdx, dir);
+          }
+          slideCrop.classList.remove("is-turning");
+        }, 210);
+
+        setTimeout(() => {
+          animLayer.classList.remove("is-playing", "turn-next", "turn-back");
+          isAnimating = false;
+        }, 560);
+      }
+
+      let isFinishing = false;
+      function finishAndReturn() {
+        if (isFinishing) return;
+        isFinishing = true;
+        let activeUserId = "guest";
+        try {
+          const userRaw = localStorage.getItem("nq-user");
+          if (userRaw) {
+            const u = JSON.parse(userRaw);
+            if (u && u.provider === "google" && u.email) activeUserId = String(u.email).toLowerCase().trim();
+            else if (u && u.name) activeUserId = String(u.name).toLowerCase().trim();
+          }
+        } catch {}
+
+        const key = `b${bab}_${mode}`;
+        const scopedBookKey = `nq-read-books:${activeUserId}`;
+        let map = {};
+        try {
+          map = JSON.parse(localStorage.getItem(scopedBookKey) || localStorage.getItem("nq-read-books") || "{}");
+        } catch {}
+        map[key] = true;
+        try {
+          const serializedBooks = JSON.stringify(map);
+          localStorage.setItem(scopedBookKey, serializedBooks);
+          localStorage.setItem("nq-read-books", serializedBooks);
+        } catch {}
+
+        try {
+          const now = new Date();
+          const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+          const scopedStreakKey = `nq-streak:${activeUserId}`;
+          const prev = JSON.parse(localStorage.getItem(scopedStreakKey) || localStorage.getItem("nq-streak") || "[]");
+          const set = new Set(Array.isArray(prev) ? prev.filter((v) => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v)) : []);
+          set.add(todayKey);
+          const serializedStreak = JSON.stringify([...set].sort());
+          localStorage.setItem(scopedStreakKey, serializedStreak);
+          localStorage.setItem("nq-streak", serializedStreak);
+        } catch {}
+
+        if (window.opener && !window.opener.closed) {
+          try {
+            window.opener.postMessage({
+              type: "nq-reader-end",
+              bab,
+              mode,
+              label: `Bab ${bab} (${mode === "materi" ? "Materi" : "Full Jepang"})`
+            }, "*");
+          } catch {}
+        }
+
+        SFX.finish();
+        fireEndConfetti();
+        azuSay("Yatta! Kembali ke tab utama ya~ ✨", 2000);
+        showToast("Selesai membaca! Mengarahkan kembali ke Peta Utama... 🏝️");
+
+        setTimeout(() => {
+          if (window.opener && !window.opener.closed) {
+            try { window.opener.focus(); } catch {}
+          }
+          window.close();
+          // Fallback if opened directly outside window.open
+          setTimeout(() => {
+            window.location.href = "index.html";
+          }, 180);
+        }, 720);
+      }
+
+      // Wire events
+      btnBackHit.addEventListener("click", () => {
+        if (slideIdx === 0) {
+          SFX.pop();
+          showToast("Ini halaman pertama Bab " + bab + " 📖");
+          azuSay("Sudah halaman paling depan nih! Tekan Next di kanan~ 👉");
+          return;
+        }
+        goSlide(slideIdx - 1, -1);
+      });
+
+      btnNextHit.addEventListener("click", () => {
+        const deck = getDeck();
+        if (slideIdx >= deck.slides.length - 1) {
+          finishAndReturn();
+        } else {
+          goSlide(slideIdx + 1, 1);
+        }
+      });
+
+      document.getElementById("dotsPill").addEventListener("click", (e) => {
+        const dot = e.target.closest(".page-dot");
+        if (!dot) return;
+        const p = parseInt(dot.dataset.page, 10);
+        goSlide(p);
+      });
+
+      document.getElementById("btnCloseToMap").addEventListener("click", finishAndReturn);
+      window.finishAndReturn = finishAndReturn;
+
+      document.getElementById("btnZoom").addEventListener("click", (e) => {
+        const zoomed = bookViewport.classList.toggle("is-zoomed");
+        e.currentTarget.textContent = zoomed ? "📐 Fit Layar" : "🔍 Perbesar";
+        SFX.pop();
+      });
+
+      document.getElementById("btnAzuCheer").addEventListener("click", () => {
+        SFX.pop();
+        azuSay("Ganbatte baca Minna Bab " + bab + "! Azu menemanimu~ 💙");
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") btnNextHit.click();
+        else if (e.key === "ArrowLeft") btnBackHit.click();
+      });
+
+      // Init first render & preload page-turn SVGs quietly
+      applySlideCrop(0, null);
+      Object.values(ANIM_CONFIG).forEach((c) => {
+        const pre = new Image();
+        pre.src = c.file;
+      });
+      setTimeout(() => azuSay(`Selamat fokus belajar Bab ${bab}! Tekan Next di kanan bawah untuk lanjut 👉`), 600);
+    })();
+  </script>
+</body>
+</html>

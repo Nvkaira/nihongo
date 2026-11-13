@@ -5,3 +5,6 @@ Thumbs.db
 
 # Deployment zip
 *.zip
+
+# Scratch / temporary test files
+scratch/

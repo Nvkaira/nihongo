@@ -6,11 +6,12 @@
 (function () {
   "use strict";
 
-  const D1 = window.BAB1;
+  const D1 = window.BAB1 || { nodes: [], stages: {}, unit: { label: "Bab 1", title: "はじめまして!|hajimemashite!", sub: "Kenalan & memperkenalkan diri" } };
   const D2 = window.BAB2 || { nodes: [], stages: {}, unit: { label: "Bab 2", title: "これ・それ・あれ|kore, sore, are", sub: "Benda di sekitarku & kepemilikan" } };
   const D3 = window.BAB3 || { nodes: [], stages: {}, unit: { label: "Bab 3", title: "ここ・そこ・あそこ|koko, soko, asoko", sub: "Tempat, arah, lantai & belanja" } };
   const D4 = window.BAB4 || { nodes: [], stages: {}, unit: { label: "Bab 4", title: "今 何時ですか|ima nanji desu ka", sub: "Waktu, hari, rutinitas & kata kerja" } };
   const D5 = window.BAB5 || { nodes: [], stages: {}, unit: { label: "Bab 5", title: "どこへ 行きますか|doko e ikimasu ka", sub: "Perjalanan, transportasi & kalender" } };
+  const D6 = window.BAB6 || { nodes: [], stages: {}, unit: { label: "Bab 6", title: "何を 食べますか|nani o tabemasu ka", sub: "Makanan, kegiatan & ajakan bersama" } };
 
   const ALL_UNITS = {
     b1: D1.unit,
@@ -18,6 +19,7 @@
     b3: D3.unit,
     b4: D4.unit,
     b5: D5.unit,
+    b6: D6.unit,
   };
 
   const BAB_MATERIALS = {
@@ -346,6 +348,71 @@
         },
       ],
     },
+    b6: {
+      num: "6",
+      title: "何を 食べますか|nani o tabemasu ka",
+      sub: "Makanan, kegiatan & ajakan bersama",
+      color: "#14C3A2",
+      headerBg: "#E6FBF5",
+      topics: [
+        {
+          tag: "Objek Penderita",
+          text: "〜を食べます",
+          romaji: "~o tabemasu",
+          meaning: "Makan / Minum [Benda]",
+          desc: "Partikel を (dilafalkan 'o') menandai kata benda yang menjadi sasaran langsung atau objek dari suatu kata kerja aksi aktif.",
+          example: {
+            jp: "わたしは ごはんを たべます。",
+            romaji: "Watashi wa gohan o tabemasu.",
+            id: "Saya makan nasi.",
+            tokens: ["わたし|watashi", "は|wa", "ごはん|gohan", "を|o", "たべます|tabemasu"],
+          },
+          tip: "Huruf hiragana を HANYA digunakan sebagai partikel kalimat dan dibaca persis seperti huruf お (o)!",
+        },
+        {
+          tag: "Tempat Aksi",
+          text: "〜でします",
+          romaji: "~de shimasu",
+          meaning: "Melakukan [aksi] di [tempat]",
+          desc: "Partikel で (de) menandai lokasi fisik tempat suatu kegiatan aktif dilakukan (makan, minum, membaca, bekerja).",
+          example: {
+            jp: "レストランで ごはんを たべます。",
+            romaji: "Resutoran de gohan o tabemasu.",
+            id: "Makan nasi di restoran.",
+            tokens: ["レストラン|resutoran", "で|de", "ごはん|gohan", "を|o", "たべます|tabemasu"],
+          },
+          tip: "Gunakan partikel で jika ada kegiatan aktif. Gunakan に jika hanya menyatakan keberadaan diam.",
+        },
+        {
+          tag: "Ajakan Ramah",
+          text: "〜ませんか",
+          romaji: "~masen ka",
+          meaning: "Maukah... bersama?",
+          desc: "Bentuk negatif tanya yang santun untuk mengajak lawan bicara melakukan sesuatu bersama-sama tanpa terkesan memaksa.",
+          example: {
+            jp: "いっしょに おちゃを のみませんか。",
+            romaji: "Isshoni ocha o nomimasen ka.",
+            id: "Maukah minum teh hijau bersama-sama?",
+            tokens: ["いっしょに|isshoni", "おちゃ|ocha", "を|o", "のみませんか|nomimasen ka"],
+          },
+          tip: "Jawaban jika menyetujui ajakan adalah: 'ええ、〜ましょう' (Ya, mari kita lakukan!).",
+        },
+        {
+          tag: "Mari / Ayo",
+          text: "〜ましょう",
+          romaji: "~mashou",
+          meaning: "Mari kita... / Ayo!",
+          desc: "Bentuk ajakan inisiatif atau tanggapan menyetujui ketika kedua pihak sepakat untuk melakukan suatu aktivitas bersama.",
+          example: {
+            jp: "ちょっと やすみましょう。",
+            romaji: "Chotto yasumimashou.",
+            id: "Mari kita beristirahat sebentar.",
+            tokens: ["ちょっと|chotto", "やすみましょう|yasumimashou"],
+          },
+          tip: "Dapat juga digunakan untuk merespons ajakan '〜ませんか' dengan hangat dan positif.",
+        },
+      ],
+    },
   };
 
   const ALL_STAGES = {
@@ -354,6 +421,7 @@
     ...(D3.stages || {}),
     ...(D4.stages || {}),
     ...(D5.stages || {}),
+    ...(D6.stages || {}),
   };
   let PHASES = (ALL_STAGES.s3_1 || ALL_STAGES.s2_1 || ALL_STAGES.s1 || D1.stage).phases;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -372,6 +440,11 @@
     set(k, v) {
       try {
         localStorage.setItem(k, v);
+      } catch (e) {}
+    },
+    remove(k) {
+      try {
+        localStorage.removeItem(k);
       } catch (e) {}
     },
   };
@@ -430,45 +503,168 @@
   const RUBY = /\{([^|}]+)\|([^}]+)\}/g;
   const parseSeg = (t) => {
     const i = t.lastIndexOf("|");
+    if (i === -1) return { k: t, r: "" };
     return { k: t.slice(0, i), r: t.slice(i + 1) };
   };
   function jp(tokens, cls = "") {
     const segs = [].concat(tokens).map((t) => {
       const s = parseSeg(t);
-      return `<span class="seg"><span class="kana">${s.k.replace(RUBY, "<ruby>$1<rt>$2</rt></ruby>")}</span><span class="romaji" lang="ja-Latn">${s.r}</span></span>`;
+      return `<span class="seg"><span class="kana">${s.k.replace(RUBY, "<ruby>$1<rt>$2</rt></ruby>")}</span>${s.r ? `<span class="romaji" lang="ja-Latn">${s.r}</span>` : ""}</span>`;
     });
     return `<span class="jp ${cls}" lang="ja">${segs.join("")}</span>`;
   }
-  const rich = (html) => html.replace(/\[\[(.+?)\]\]/g, (_, t) => jp(t.split("+"), "jp--inline"));
+  const rich = (html) =>
+    String(html)
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/\[\[(.+?)\]\]/g, (_, t) => jp(t.split("+"), "jp--inline"));
   const enc = (tokens) => encodeURIComponent(JSON.stringify([].concat(tokens)));
   const dec = (s) => JSON.parse(decodeURIComponent(s));
 
-  // ---------- Suara ucapan (TTS bawaan browser) ----------
+  // ---------- Suara Ucapan & Pelafalan (Hybrid: Local SpeechSynthesis + Online Fallback) ----------
   let jaVoice = null;
-  let warnedVoice = false;
-  const hasTTS = "speechSynthesis" in window;
+  const hasTTS = typeof window !== "undefined" && "speechSynthesis" in window;
+  const audioCache = new Map();
+  let currentAudio = null;
+
   function loadVoices() {
-    jaVoice = speechSynthesis.getVoices().find((v) => /^ja/i.test(v.lang)) || null;
+    try {
+      if (!hasTTS) return;
+      const voices = speechSynthesis.getVoices() || [];
+      jaVoice = voices.find((v) => /^ja/i.test(v.lang)) || null;
+    } catch {}
   }
   if (hasTTS) {
     loadVoices();
-    speechSynthesis.onvoiceschanged = loadVoices;
+    try { speechSynthesis.onvoiceschanged = loadVoices; } catch {}
   }
-  function say(tokens, rate = 0.85) {
-    if (!hasTTS) return toast("Browser ini belum mendukung suara.");
-    const text = [].concat(tokens).map((t) => parseSeg(t).k.replace(RUBY, "$2")).join("");
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "ja-JP";
-    u.rate = rate;
-    if (jaVoice) u.voice = jaVoice;
-    speechSynthesis.speak(u);
-    if (!jaVoice && !warnedVoice) {
-      warnedVoice = true;
-      toast("Suara bahasa Jepang belum terpasang di perangkat ini, jadi pelafalannya mungkin kurang pas.");
+
+  // Mobile Audio Unlocker: Membuka kunci audio policy pada sentuhan/klik pertama di HP
+  let audioUnlocked = false;
+  function unlockAudioPolicy() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    try {
+      if (hasTTS) {
+        const dummyUtter = new SpeechSynthesisUtterance("");
+        speechSynthesis.speak(dummyUtter);
+      }
+      const dummyAud = new Audio();
+      dummyAud.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+      dummyAud.play().catch(() => {});
+    } catch {}
+  }
+  if (typeof window !== "undefined") {
+    window.addEventListener("pointerdown", unlockAudioPolicy, { once: true, passive: true });
+    window.addEventListener("keydown", unlockAudioPolicy, { once: true, passive: true });
+  }
+
+  function prepareSpeechText(tokens) {
+    const arr = [].concat(tokens);
+    if (arr.length === 1) {
+      const s = parseSeg(arr[0]);
+      if (s.k === "は" && (s.r.toLowerCase() === "wa" || !s.r)) return "わ";
+      if (s.k === "へ" && (s.r.toLowerCase() === "e" || !s.r)) return "え";
+    }
+    return arr
+      .map((t) => {
+        const s = parseSeg(t);
+        let text = s.k.replace(RUBY, "$2");
+        if (s.k === "は" && s.r.toLowerCase() === "wa") return "わ";
+        if (s.k === "へ" && s.r.toLowerCase() === "e") return "え";
+        return text;
+      })
+      .join("")
+      .trim();
+  }
+
+  function playOnlineTTS(text, rate = 0.85, onFallback) {
+    try {
+      hush();
+      if (audioCache.has(text)) {
+        const aud = audioCache.get(text);
+        aud.currentTime = 0;
+        aud.playbackRate = rate;
+        currentAudio = aud;
+        aud.play().catch(() => {
+          if (typeof onFallback === "function") onFallback();
+        });
+        return;
+      }
+      const encText = encodeURIComponent(text);
+      const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ja&client=tw-ob&q=${encText}`;
+      const aud = new Audio(url);
+      aud.playbackRate = rate;
+      currentAudio = aud;
+      audioCache.set(text, aud);
+      aud.play().catch(() => {
+        if (typeof onFallback === "function") onFallback();
+      });
+    } catch {
+      if (typeof onFallback === "function") onFallback();
     }
   }
-  const hush = () => hasTTS && speechSynthesis.cancel();
+
+  function say(tokens, rate = 0.85) {
+    // Hormati toggle suara di top dock
+    if (typeof SFX !== "undefined" && !SFX.on) return;
+
+    const text = prepareSpeechText(tokens);
+    if (!text) return;
+
+    hush();
+
+    // Prioritas 1: Jika OS memiliki suara Jepang native lokal, gunakan lokal (instan, 0 latensi)
+    if (hasTTS && jaVoice) {
+      try {
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "ja-JP";
+        u.rate = rate;
+        u.voice = jaVoice;
+        speechSynthesis.speak(u);
+        return;
+      } catch {}
+    }
+
+    // Prioritas 2: Fallback ke Audio Stream online ber-akustik tinggi (jernih untuk perangkat tanpa paket ja-JP)
+    playOnlineTTS(text, rate, () => {
+      // Prioritas 3 (Offline / Network Error): Coba Web Speech bawaan meski tanpa voice ja spesifik
+      if (hasTTS) {
+        try {
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = "ja-JP";
+          u.rate = rate;
+          speechSynthesis.speak(u);
+        } catch {}
+      } else {
+        toast("Audio pelafalan tidak tersedia.");
+      }
+    });
+  }
+
+  function hush() {
+    if (hasTTS) {
+      try { speechSynthesis.cancel(); } catch {}
+    }
+    if (currentAudio) {
+      try {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      } catch {}
+      currentAudio = null;
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    window.__AUDIO_ENGINE__ = {
+      say,
+      hush,
+      prepareSpeechText,
+      playOnlineTTS,
+      audioCache,
+      hasJaVoice: () => !!jaVoice,
+      isUnlocked: () => audioUnlocked,
+    };
+  }
 
   function toast(msg) {
     let t = document.querySelector(".toast");
@@ -503,7 +699,7 @@
         if (!C) return null;
         ctx = new C();
       }
-      if (ctx.state === "suspended") ctx.resume();
+      if (ctx.state === "suspended") ctx.resume().catch(() => {});
       return ctx;
     }
     function tone(freq, { t = 0, dur = 0.12, type = "sine", vol = 0.16, slide = 0 } = {}) {
@@ -717,19 +913,30 @@
       blink();
     }
     function where(w) {
-      if (el.dataset.where === w) return;
-      el.dataset.where = w;
-      el.classList.remove("is-arriving");
-      void el.offsetWidth;
-      el.classList.add("is-arriving");
+      if (el.dataset.where !== w) {
+        el.dataset.where = w;
+        el.classList.remove("is-arriving");
+        void el.offsetWidth;
+        el.classList.add("is-arriving");
+      }
+      updateAtTop();
+    }
+    function updateAtTop() {
+      if (!el) return;
+      const atTop = el.dataset.where === "map" && window.scrollY < 140;
+      el.classList.toggle("is-at-top", atTop);
     }
     function speak(text, ms = 2600) {
       bubble.textContent = text;
       bubble.classList.remove("is-on");
       void bubble.offsetWidth;
       bubble.classList.add("is-on");
+      el.classList.add("has-bubble");
       clearTimeout(bubbleT);
-      bubbleT = setTimeout(() => bubble.classList.remove("is-on"), ms);
+      bubbleT = setTimeout(() => {
+        bubble.classList.remove("is-on");
+        el.classList.remove("has-bubble");
+      }, ms);
     }
     function setPose(p) {
       seal.classList.remove(...POSES.map((x) => "p-" + x));
@@ -792,7 +999,7 @@
         blink();
       }, rand(2200, 5200));
     }
-    return { mount, where, say: speak, react, get el() { return seal; } };
+    return { mount, where, updateAtTop, say: speak, react, get el() { return seal; } };
   })();
 
   // ---------- State ----------
@@ -810,19 +1017,287 @@
     { id: "s4_2", label: "Stage 4-2", title: "Rutinitas & Jam Kerja", sub: "ます・から〜まで", state: "locked", stage: true, playable: true },
     { id: "s5_1", label: "Stage 5-1", title: "Transportasi", sub: "行きます・へ・で", state: "locked", stage: true, playable: true },
     { id: "s5_2", label: "Stage 5-2", title: "Kalender & Rekan", sub: "日付・いつ・と", state: "locked", stage: true, playable: true },
-    { id: "b6", label: "Bab 6", title: "Makanan & Kegiatan", sub: "を・で・ませんか", state: "locked" },
+    { id: "b6", label: "Bab 6", title: "Makanan & Kegiatan", sub: "を・で・ませんか", state: "locked", stage: true, playable: true },
   ];
+
+  const ACCOUNTS_KEY = "nq-accounts";
+  const PROGRESS_KEY = "nq-progress";
+  const STREAK_KEY = "nq-streak";
+  const READ_BOOKS_KEY = "nq-read-books";
+  const WEEKDAY_SHORT = ["S", "S", "R", "K", "J", "S", "M"];
+  const WEEKDAY_NAMES = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
+
+  function getActiveUserId() {
+    if (S && S.user) {
+      const raw = S.user.provider === "google" ? S.user.email : S.user.name;
+      if (raw) return String(raw).toLowerCase().trim();
+    }
+    return "guest";
+  }
+
+  function getScopedKey(baseKey) {
+    return `${baseKey}:${getActiveUserId()}`;
+  }
+
+  function getAllAccounts() {
+    try {
+      const raw = store.get(ACCOUNTS_KEY, "{}");
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function saveAccount(acc) {
+    const all = getAllAccounts();
+    const id = (acc.provider === "google" ? acc.email : acc.name).toLowerCase().trim();
+    all[id] = acc;
+    store.set(ACCOUNTS_KEY, JSON.stringify(all));
+  }
+
+  function toDateKey(d = new Date()) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function shiftDateKey(key, deltaDays) {
+    const [y, m, d] = key.split("-").map(Number);
+    return toDateKey(new Date(y, m - 1, d + deltaDays));
+  }
+
+  function normalizeStudyDates(arr) {
+    if (!Array.isArray(arr)) return [];
+    const valid = new Set();
+    arr.forEach((v) => {
+      if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v)) valid.add(v);
+    });
+    return [...valid].sort();
+  }
+
+  function loadStudyDates() {
+    try {
+      const scopedKey = getScopedKey(STREAK_KEY);
+      let raw = store.get(scopedKey, "");
+      if (!raw && !S.user) raw = store.get(STREAK_KEY, "");
+      if (raw) {
+        S.studyDates = normalizeStudyDates(JSON.parse(raw));
+      } else {
+        S.studyDates = [];
+      }
+    } catch {
+      S.studyDates = [];
+    }
+  }
+
+  function saveStudyDates() {
+    S.studyDates = normalizeStudyDates(S.studyDates);
+    const data = JSON.stringify(S.studyDates);
+    store.set(getScopedKey(STREAK_KEY), data);
+    if (!S.user) store.set(STREAK_KEY, data);
+  }
+
+  function loadReadBooks() {
+    try {
+      const scopedKey = getScopedKey(READ_BOOKS_KEY);
+      let raw = store.get(scopedKey, "");
+      if (!raw && !S.user) raw = store.get(READ_BOOKS_KEY, "{}");
+      S.readBooks = raw ? JSON.parse(raw) : {};
+    } catch {
+      S.readBooks = {};
+    }
+  }
+
+  function saveReadBooks() {
+    const data = JSON.stringify(S.readBooks || {});
+    store.set(getScopedKey(READ_BOOKS_KEY), data);
+    if (!S.user) store.set(READ_BOOKS_KEY, data);
+  }
+
+  /** Catat tanggal belajar hari ini (waktu lokal). Kembalikan true jika baru tercatat hari ini. */
+  function recordStudyToday() {
+    const todayKey = toDateKey();
+    if (!Array.isArray(S.studyDates)) S.studyDates = [];
+    if (S.studyDates.includes(todayKey)) return false;
+    S.studyDates = normalizeStudyDates([...S.studyDates, todayKey]);
+    saveStudyDates();
+    return true;
+  }
+
+  /** Hitung streak aktif, rekor terpanjang, dan kalender Senin-Minggu minggu berjalan dari S.studyDates. */
+  function getStreakStats(now = new Date()) {
+    const todayKey = toDateKey(now);
+    const yesterdayKey = shiftDateKey(todayKey, -1);
+    const dates = normalizeStudyDates(S.studyDates);
+    const dateSet = new Set(dates);
+    const studiedToday = dateSet.has(todayKey);
+
+    let count = 0;
+    let cursor = studiedToday ? todayKey : dateSet.has(yesterdayKey) ? yesterdayKey : null;
+    while (cursor && dateSet.has(cursor)) {
+      count++;
+      cursor = shiftDateKey(cursor, -1);
+    }
+
+    let longest = 0;
+    let run = 0;
+    for (let i = 0; i < dates.length; i++) {
+      if (i > 0 && shiftDateKey(dates[i - 1], 1) === dates[i]) run++;
+      else run = 1;
+      if (run > longest) longest = run;
+    }
+
+    const todayMonIdx = (now.getDay() + 6) % 7;
+    const mondayKey = shiftDateKey(todayKey, -todayMonIdx);
+    const days = WEEKDAY_SHORT.map((d, i) => {
+      const dateKey = shiftDateKey(mondayKey, i);
+      return {
+        d,
+        name: WEEKDAY_NAMES[i],
+        dateKey,
+        lit: dateSet.has(dateKey),
+        today: dateKey === todayKey,
+      };
+    });
+
+    return {
+      count,
+      longest,
+      totalDays: dateSet.size,
+      studiedToday,
+      todayKey,
+      days,
+    };
+  }
+
+  function buildStreakDaysHtml(days) {
+    return days
+      .map(
+        (day) =>
+          `<span class="day-dot${day.lit ? " is-lit" : ""}${day.today ? " is-today" : ""}" title="${day.name} (${day.dateKey})${day.lit ? " — Belajar ✓" : day.today ? " — Hari ini" : ""}">${day.d}</span>`
+      )
+      .join("");
+  }
+
+  const API_MYSQL_URL = "http://localhost/nihongo_api/index.php";
+
+  async function syncProgressToMySQL() {
+    if (!S.user || !S.user.id) return;
+    try {
+      const nodeStates = {};
+      S.nodes.forEach((n) => {
+        nodeStates[n.id] = n.state;
+      });
+      await fetch(`${API_MYSQL_URL}?action=sync`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: S.user.id,
+          activeStageId: S.activeStageId,
+          xpTotal: S.xpTotal,
+          hp: S.hp,
+          starsBy: S.starsBy,
+          nodes: nodeStates,
+          studyDate: toDateKey(),
+          readBooks: Object.keys(S.readBooks || {}),
+        }),
+      });
+    } catch (e) {
+      // offline fallback
+    }
+  }
+
+  function saveProgress() {
+    const nodeStates = {};
+    S.nodes.forEach((n) => {
+      nodeStates[n.id] = n.state;
+    });
+    const data = JSON.stringify({
+      activeStageId: S.activeStageId,
+      xpTotal: S.xpTotal,
+      starsBy: S.starsBy,
+      nodeStates,
+    });
+    store.set(getScopedKey(PROGRESS_KEY), data);
+    if (!S.user) store.set(PROGRESS_KEY, data);
+    syncProgressToMySQL();
+  }
+
+  function loadProgress(isNewAccount = false) {
+    if (isNewAccount) {
+      S.activeStageId = "s1";
+      S.xpTotal = 0;
+      S.starsBy = {};
+      S.nodes = ALL_NODES.map((n) => {
+        if (n.id === "b0") return { ...n, state: "done" };
+        if (n.id === "s1") return { ...n, state: "current" };
+        return { ...n, state: "locked" };
+      });
+      S.studyDates = [toDateKey()];
+      S.readBooks = {};
+      saveProgress();
+      saveStudyDates();
+      saveReadBooks();
+      return;
+    }
+
+    const scopedKey = getScopedKey(PROGRESS_KEY);
+    let raw = store.get(scopedKey, "");
+    if (!raw && !S.user) {
+      raw = store.get(PROGRESS_KEY, "");
+    }
+
+    if (raw) {
+      try {
+        const saved = JSON.parse(raw);
+        if (saved && typeof saved === "object") {
+          if (saved.nodeStates && typeof saved.nodeStates === "object") {
+            S.nodes.forEach((n) => {
+              const st = saved.nodeStates[n.id];
+              if (st === "done" || st === "current" || st === "locked") n.state = st;
+            });
+          }
+          if (saved.starsBy && typeof saved.starsBy === "object") S.starsBy = saved.starsBy;
+          if (typeof saved.xpTotal === "number" && Number.isFinite(saved.xpTotal)) S.xpTotal = saved.xpTotal;
+          if (typeof saved.activeStageId === "string" && saved.activeStageId) S.activeStageId = saved.activeStageId;
+        }
+      } catch {}
+    } else {
+      S.activeStageId = "s1";
+      S.xpTotal = 0;
+      S.starsBy = {};
+      S.nodes = ALL_NODES.map((n) => {
+        if (n.id === "b0") return { ...n, state: "done" };
+        if (n.id === "s1") return { ...n, state: "current" };
+        return { ...n, state: "locked" };
+      });
+    }
+    loadStudyDates();
+    loadReadBooks();
+  }
 
   const S = {
     screen: "map",
+    user: (() => {
+      try {
+        return JSON.parse(store.get("nq-user", "null"));
+      } catch (e) {
+        return null;
+      }
+    })(),
     romaji: store.get("nq-romaji", "1") !== "0",
     activeStageId: "s3_1",
     nodes: ALL_NODES.map((n) => ({ ...n })),
     starsBy: { s1: 3, s2: 3, s3: 3, s2_1: 3, s2_2: 3, s2_3: 3 },
     xpTotal: 720,
+    studyDates: [],
+    readBooks: {},
     openedStat: null,
     fresh: null,
     greeted: false,
+    demoMode: false,
+    prevFocus: null,
     steps: [],
     i: 0,
     fills: PHASES.map(() => 0),
@@ -837,17 +1312,37 @@
     combo: 0,
     best: 0,
     gain: 0,
+    bankedGain: 0,
+    preBossGain: null,
+    wasAlreadyDone: false,
     banked: false,
   };
 
   let cfg, root;
 
+  function refreshReadBooks(showCelebrate, label) {
+    loadReadBooks();
+    const addedStreak = showCelebrate ? recordStudyToday() : (loadStudyDates(), false);
+    if (S.screen === "map") renderMap();
+    if (showCelebrate) {
+      SFX.unlock();
+      const streak = getStreakStats();
+      const streakSuffix = addedStreak ? ` Streak: ${streak.count} hari 🔥` : "";
+      Buddy.react("party", `Okaeri! Hebat sudah menyelesaikan ${label || "materi Minna no Nihongo"}!${streakSuffix} 🎉`);
+      toast(`Selesai membaca ${label || "materi"}!${streakSuffix} 🌟`);
+    }
+  }
+
   function start(opts) {
     cfg = Object.assign({ root: "#app", brand: "Nihongo Quest", fastMs: 15000 }, opts);
     root = document.querySelector(cfg.root);
     root.addEventListener("click", onClick);
-    root.addEventListener("keydown", (e) => {
+    document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
+        if (document.getElementById("login-modal-root")) {
+          closeLoginModal();
+          return;
+        }
         if (document.getElementById("topic-modal-root")) {
           closeTopicModal();
           return;
@@ -857,32 +1352,181 @@
           return;
         }
       }
+    });
+    root.addEventListener("keydown", (e) => {
       const isle = e.target.closest && e.target.closest(".isle");
       if (isle && (e.key === "Enter" || e.key === " ")) {
         e.preventDefault();
-        onNode(isle.dataset.id);
+        if (isle.dataset.act === "reader-node") {
+          ACT["reader-node"](isle);
+        } else {
+          onNode(isle.dataset.id);
+        }
       }
     });
     root.addEventListener("pointerdown", (e) => {
-      if (e.target.closest(".btn, .isle, .chip-btn, .speak, .icon-btn, .toggle")) SFX.tap();
+      if (e.target.closest(".btn, .isle, .chip-btn, .speak, .icon-btn, .toggle, .dock-btn")) SFX.tap();
+    });
+    window.addEventListener("resize", () => {
+      updateDockNotch(false);
+    });
+    window.addEventListener("scroll", Buddy.updateAtTop, { passive: true });
+    window.addEventListener("storage", (e) => {
+      if (e.key === READ_BOOKS_KEY || e.key === getScopedKey(READ_BOOKS_KEY)) refreshReadBooks(false);
+      else if (e.key === STREAK_KEY || e.key === getScopedKey(STREAK_KEY)) {
+        loadStudyDates();
+        if (S.screen === "map") renderMap();
+      }
+    });
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.type === "nq-reader-end") {
+        refreshReadBooks(true, e.data.label);
+      }
     });
     Buddy.mount();
     const m = location.hash.match(/^#step-(\d+)$/);
     if (location.hash === "#unlock") {
       // Demo: anggap Stage 1-1 baru saja lulus, lalu putar animasi buka pulau.
-      Object.assign(S, { starsBy: { s1: 3 }, xpTotal: 95, greeted: true });
+      S.demoMode = true;
+      S.nodes = ALL_NODES.map((n, idx) => ({
+        ...n,
+        state: idx === 0 ? "done" : idx === 1 ? "current" : "locked",
+      }));
+      Object.assign(S, { activeStageId: "s1", starsBy: { s1: 3 }, xpTotal: 95, greeted: true });
       unlockNext(3);
       renderMap();
     } else if (m) {
+      loadProgress();
       startLesson();
       go(Math.min(+m[1], S.steps.length - 1));
     } else {
+      loadProgress();
       renderMap();
     }
   }
   window.NihongoMock = { start };
 
   const setRootClass = () => (root.className = `app app--${S.screen}${S.romaji ? "" : " romaji-off"}`);
+
+  function renderTopDock() {
+    const activeTab = S.activeDockTab || "avatar";
+    const soundOn = SFX.on;
+    const romajiOn = S.romaji;
+
+    return `
+      <nav class="top-dock" id="topDock" role="toolbar" aria-label="Aksi Cepat">
+        <svg class="dock-defs" width="0" height="0" style="position:absolute;">
+          <defs>
+            <clipPath id="dock-scoop-clip" clipPathUnits="userSpaceOnUse">
+              <path d="M 104 39 C 87 39 86 78 52 78 C 18 78 17 39 0 39 C 0 17.5 23.3 0 52 0 C 80.7 0 104 17.5 104 39 Z" />
+            </clipPath>
+          </defs>
+        </svg>
+
+        <!-- The sliding notch scoop ("Ellipse 12") matching web background -->
+        <div class="dock-scoop" id="dockScoop" aria-hidden="true" style="--notch-x: 33px;">
+          <div class="dock-scoop-body"></div>
+        </div>
+
+        <div class="dock-nav-items">
+          <!-- 1. Avatar (Login / Profile) -->
+          <button class="dock-btn dock-btn--avatar${activeTab === "avatar" ? " is-active" : ""}${S.user ? " is-logged-in" : ""}" 
+                  type="button" 
+                  data-act="dock-tab" 
+                  data-tab="avatar" 
+                  aria-label="${S.user ? 'Akun: ' + S.user.name : 'Masuk ke Akun'}">
+            <div class="dock-avatar-inner">
+              <svg viewBox="1280 960 810 770" fill="none">
+                <!-- Outer double ring crescent -->
+                <path d="M1837.94 1015.6C1980.34 1064.19 2082.74 1199.12 2082.74 1357.97C2082.74 1557.71 1920.82 1719.63 1721.08 1719.63C1652.94 1719.63 1589.21 1700.79 1534.8 1668.03C1571.46 1680.54 1610.77 1687.33 1651.67 1687.33C1851.41 1687.33 2013.33 1525.41 2013.33 1325.67C2013.33 1194.06 1943.04 1078.87 1837.94 1015.6ZM1651.67 964C1719.8 964 1783.54 982.843 1837.94 1015.6C1801.28 1003.09 1761.97 996.299 1721.08 996.299C1521.33 996.299 1359.41 1158.22 1359.41 1357.97C1359.41 1489.57 1429.71 1604.76 1534.8 1668.03C1392.4 1619.44 1290 1484.51 1290 1325.67C1290 1125.92 1451.92 964 1651.67 964Z" fill="#1D1B3A"/>
+                <!-- Inner circle stroke -->
+                <path d="M1685.17 1626.93C1527.79 1626.93 1400.2 1499.35 1400.2 1341.97C1400.2 1184.59 1527.79 1057 1685.17 1057C1842.55 1057 1970.13 1184.59 1970.13 1341.97C1970.13 1499.35 1842.55 1626.93 1685.17 1626.93Z" stroke-width="41.7" stroke-linecap="round" stroke-linejoin="round" stroke="#1D1B3A"/>
+                <!-- Head Circle -->
+                <path d="M1794.43 1292.2C1794.54 1306.58 1791.79 1320.84 1786.34 1334.15C1780.89 1347.45 1772.84 1359.54 1762.68 1369.71C1752.51 1379.88 1740.42 1387.92 1727.11 1393.37C1713.81 1398.82 1699.55 1401.57 1685.17 1401.46C1663.56 1401.46 1642.44 1395.06 1624.47 1383.05C1606.5 1371.04 1592.5 1353.98 1584.23 1334.02C1575.96 1314.05 1573.79 1292.08 1578.01 1270.89C1582.23 1249.69 1592.63 1230.23 1607.91 1214.95C1623.19 1199.67 1642.66 1189.26 1663.85 1185.04C1685.05 1180.83 1707.02 1182.99 1726.98 1191.26C1746.95 1199.53 1764.01 1213.53 1776.02 1231.5C1788.02 1249.47 1794.43 1270.59 1794.43 1292.2Z" stroke-width="41.7" stroke-linecap="round" stroke-linejoin="round" stroke="#1D1B3A"/>
+                <!-- Shoulders Arc -->
+                <path d="M1854.75 1571.05C1854.75 1526.07 1836.89 1482.94 1805.08 1451.13C1773.28 1419.33 1730.14 1401.46 1685.17 1401.46C1640.19 1401.46 1597.05 1419.33 1565.25 1451.13C1533.44 1482.94 1515.58 1526.07 1515.58 1571.05" stroke-width="41.7" stroke-linecap="round" stroke-linejoin="round" stroke="#1D1B3A"/>
+              </svg>
+              ${S.user ? '<span class="dock-avatar-badge" title="Terhubung"></span>' : ''}
+            </div>
+          </button>
+
+          <!-- 2. Sound -->
+          <button class="dock-btn dock-btn--sound${activeTab === "sound" ? " is-active" : ""}" 
+                  type="button" 
+                  data-act="dock-tab" 
+                  data-tab="sound" 
+                  aria-pressed="${soundOn}" 
+                  aria-label="Efek Suara">
+            <div class="dock-sound-circle">
+              <svg viewBox="3980 1590 320 230" fill="none">
+                <path d="M4014.64 1748.39V1669.78C4014.64 1662.16 4020.59 1655.97 4027.93 1655.97H4075.55C4077.31 1655.96 4079.05 1655.6 4080.66 1654.9C4082.27 1654.21 4083.73 1653.19 4084.94 1651.92L4124.78 1606.92C4133.15 1598.21 4147.45 1604.38 4147.45 1616.7V1801.49C4147.45 1813.89 4132.98 1820.01 4124.66 1811.13L4084.95 1766.39C4083.74 1765.07 4082.27 1764.03 4080.63 1763.31C4079 1762.59 4077.23 1762.22 4075.44 1762.22H4027.93C4020.59 1762.22 4014.64 1756.03 4014.64 1748.39Z" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" stroke="#1D1B3A" fill="#1D1B3A"/>
+                <g class="sound-icon-status">
+                  ${soundOn ? `
+                    <path d="M4195 1675 C4220 1695 4220 1725 4195 1745" stroke="#1D1B3A" stroke-width="26" stroke-linecap="round"/>
+                    <path d="M4240 1650 C4280 1685 4280 1735 4240 1770" stroke="#1D1B3A" stroke-width="26" stroke-linecap="round"/>
+                  ` : `
+                    <path d="M4280.26 1748.93L4200.58 1669.25M4280.26 1669.25L4200.58 1748.93" stroke-width="26" stroke-linecap="round" stroke="#1D1B3A"/>
+                  `}
+                </g>
+              </svg>
+            </div>
+          </button>
+
+          <!-- 3. Romaji Switch -->
+          <button class="dock-btn dock-btn--romaji${activeTab === "romaji" ? " is-active" : ""}" 
+                  type="button" 
+                  data-act="dock-tab" 
+                  data-tab="romaji" 
+                  aria-pressed="${romajiOn}" 
+                  aria-label="Bantuan Romaji">
+            <span class="dock-switch-track" aria-hidden="true">
+              <span class="dock-switch-thumb"></span>
+            </span>
+            <svg class="dock-romaji-svg" viewBox="7380 1630 1440 260" style="width: 76px; height: 15px; fill: #1D1B3A;">
+              <path d="M7381.38 1880V1829.46H7404.81V1697.33H7381.38V1646.8H7515.99C7545.1 1646.8 7567.46 1652.27 7583.08 1663.2C7598.71 1674.04 7606.52 1689.96 7606.52 1710.96C7606.52 1724.53 7603.15 1735.81 7596.41 1744.79C7589.68 1753.78 7580.54 1760.18 7569.02 1763.98C7578.2 1767.01 7584.99 1771.75 7589.38 1778.19C7593.88 1784.64 7596.22 1792.5 7596.41 1801.78L7596.71 1813.94C7596.9 1819.11 7598.03 1823.02 7600.08 1825.65C7602.22 1828.19 7605.84 1829.46 7610.92 1829.46H7626.44V1880H7575.47C7556.81 1880 7543 1875.7 7534.01 1867.11C7525.12 1858.42 7520.58 1845.72 7520.39 1829.02L7520.1 1809.54C7519.8 1793.92 7512.58 1786.1 7498.42 1786.1H7479.23V1829.46H7499V1880H7381.38ZM7501.93 1695.87H7479.23V1745.38H7501.93C7520.68 1745.38 7530.06 1737.13 7530.06 1720.62C7530.06 1704.12 7520.68 1695.87 7501.93 1695.87ZM7755.06 1884.25C7730.94 1884.25 7710.09 1879.41 7692.51 1869.75C7675.03 1859.98 7661.55 1846.06 7652.08 1828C7642.61 1809.93 7637.87 1788.5 7637.87 1763.69C7637.87 1738.69 7642.61 1717.16 7652.08 1699.09C7661.55 1680.93 7675.03 1666.96 7692.51 1657.2C7710.09 1647.43 7730.94 1642.55 7755.06 1642.55C7779.28 1642.55 7800.12 1647.43 7817.61 1657.2C7835.09 1666.96 7848.56 1680.93 7858.04 1699.09C7867.51 1717.16 7872.24 1738.69 7872.24 1763.69C7872.24 1788.5 7867.51 1809.93 7858.04 1828C7848.56 1846.06 7835.09 1859.98 7817.61 1869.75C7800.12 1879.41 7779.28 1884.25 7755.06 1884.25ZM7755.06 1833.71C7765.99 1833.71 7774.39 1827.75 7780.25 1815.84C7786.11 1803.93 7789.04 1786.4 7789.04 1763.25C7789.04 1740.11 7786.11 1722.58 7780.25 1710.66C7774.39 1698.75 7765.99 1692.79 7755.06 1692.79C7744.12 1692.79 7735.72 1698.75 7729.86 1710.66C7724 1722.58 7721.07 1740.11 7721.07 1763.25C7721.07 1786.4 7724 1803.93 7729.86 1815.84C7735.72 1827.75 7744.12 1833.71 7755.06 1833.71ZM7892.31 1880V1829.46H7915.75V1697.33H7892.31V1646.8H8011.11L8060.48 1774.24L8111.45 1646.8H8218.83V1697.33H8195.39V1829.46H8218.83V1880H8101.2V1829.46H8121.71V1732.49L8063.41 1880H8021.8L7963.5 1732.49V1829.46H7984.01V1880H7892.31ZM8230.4 1880V1829.46H8251.64L8295.44 1697.33H8263.94V1646.8H8408.67L8463.46 1829.46H8484.7V1880H8353.3V1829.46H8377.47L8370.73 1803.83H8310.38L8302.76 1829.46H8326.93V1880H8230.4ZM8321.22 1767.21H8361.06L8342.46 1696.02L8321.22 1767.21ZM8590.46 1884.39C8579.62 1884.39 8569.61 1882.34 8560.43 1878.24C8551.25 1874.14 8544.22 1868.23 8539.33 1860.52L8533.47 1880H8493.19V1783.03H8535.67V1794.31C8535.67 1809.05 8537.77 1819.11 8541.97 1824.48C8546.27 1829.85 8551.2 1832.54 8556.77 1832.54C8562.72 1832.54 8567.51 1830 8571.12 1824.92C8574.83 1819.75 8576.69 1810.52 8576.69 1797.24V1697.33H8531.28V1646.8H8676.3V1697.33H8652.86V1810.42C8652.86 1833.17 8647.49 1851.19 8636.75 1864.47C8626.1 1877.75 8610.67 1884.39 8590.46 1884.39ZM8692.12 1880V1829.46H8717.02V1697.33H8692.12V1646.8H8818.09V1697.33H8793.19V1829.46H8818.09V1880H8692.12Z"/>
+            </svg>
+          </button>
+        </div>
+      </nav>
+    `;
+  }
+
+  function updateDockNotch(smooth = true) {
+    const dock = root ? root.querySelector(".top-dock") : null;
+    if (!dock) return;
+    const scoop = dock.querySelector(".dock-scoop");
+    if (!scoop) return;
+
+    const activeTab = S.activeDockTab || "avatar";
+    const targetBtn = dock.querySelector(`.dock-btn[data-tab="${activeTab}"]`);
+    if (!targetBtn) return;
+
+    const dockRect = dock.getBoundingClientRect();
+    const btnRect = targetBtn.getBoundingClientRect();
+
+    let centerOffset = 0;
+    if (activeTab === "romaji") {
+      const track = targetBtn.querySelector(".dock-switch-track");
+      if (track) {
+        const trackRect = track.getBoundingClientRect();
+        centerOffset = (trackRect.left + trackRect.width / 2) - dockRect.left - 52;
+      } else {
+        centerOffset = (btnRect.left + btnRect.width / 2) - dockRect.left - 52;
+      }
+    } else {
+      centerOffset = (btnRect.left + btnRect.width / 2) - dockRect.left - 52;
+    }
+
+    if (!smooth) {
+      scoop.style.transition = "none";
+      scoop.style.setProperty("--notch-x", `${centerOffset}px`);
+      void scoop.offsetWidth;
+      scoop.style.transition = "";
+    } else {
+      scoop.style.setProperty("--notch-x", `${centerOffset}px`);
+    }
+  }
+
   const romajiToggle = () =>
     `<button class="toggle" type="button" data-act="romaji" aria-pressed="${S.romaji}"><span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span><span class="toggle-label">Romaji</span></button>`;
   const soundBtn = () =>
@@ -989,6 +1633,15 @@
     fuji: `<circle cx="28" cy="-52" r="12" fill="#FF5C8A" ${K}/>
       <path d="M-56 -4l38-54q18-9 36 0l38 54z" fill="#5B8CFF" ${K}/>
       <path d="M-18 -58q18-9 36 0l-7 11-7-5-5 7-6-7-6 5z" fill="#fff" ${K}/>`,
+    bookMateri: `<rect x="-32" y="-36" width="64" height="40" rx="8" fill="#583E26" ${K}/>
+      <path d="M-27 -34c10-6 21-4 27 2v32c-6-5-17-6-27-1z" fill="#FBEFD9" ${K}/>
+      <path d="M27 -34c-10-6-21-4-27 2v32c6-5 17-6 27-1z" fill="#FADEC0" ${K}/>
+      <path d="M-20 -20h13M-20 -12h11M7 -20h13M7 -12h11" stroke="#583E26" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M12 -38v16l5-4 5 4v-16z" fill="#FF5C8A" stroke="#1D1B3A" stroke-width="2"/>`,
+    scrollJep: `<rect x="-26" y="-42" width="52" height="44" rx="8" fill="#FADEC0" ${K}/>
+      <rect x="-31" y="-45" width="62" height="10" rx="5" fill="#FF5C8A" ${K}/>
+      <rect x="-31" y="-4" width="62" height="10" rx="5" fill="#AD7258" ${K}/>
+      <text x="0" y="-14" font-family="'Zen Maru Gothic', sans-serif" font-weight="900" font-size="18" fill="#371C0D" text-anchor="middle">日本</text>`,
   };
   const ISLES = {
     b0: { x: 116, y: 130, grass: "#C9B8FF", prop: "palm" },
@@ -1006,6 +1659,18 @@
     s5_2: { x: 116, y: 3270, grass: "#FF5C8A", prop: "calendar" },
     b6: { x: 200, y: 3590, grass: "#14C3A2", prop: "fuji", scale: 1.15 },
   };
+  const BRANCH_NODES = [
+    { id: "b1_mat", bab: 1, mode: "materi", parent: "s1", x: 104, y: 445, grass: "#FFD166", prop: "bookMateri", code: "BAB 1 • KIRI", title: "Materi Indo" },
+    { id: "b1_jep", bab: 1, mode: "jep",    parent: "s1", x: 446, y: 445, grass: "#FF5C8A", prop: "scrollJep",  code: "BAB 1 • KANAN", title: "Full Jepang" },
+    { id: "b2_mat", bab: 2, mode: "materi", parent: "s2_1", x: -46, y: 1205, grass: "#14C3A2", prop: "bookMateri", code: "BAB 2 • KIRI", title: "Materi Indo" },
+    { id: "b2_jep", bab: 2, mode: "jep",    parent: "s2_1", x: 296, y: 1205, grass: "#5B8CFF", prop: "scrollJep",  code: "BAB 2 • KANAN", title: "Full Jepang" },
+    { id: "b3_mat", bab: 3, mode: "materi", parent: "s3_1", x: 104, y: 1965, grass: "#FFC63D", prop: "bookMateri", code: "BAB 3 • KIRI", title: "Materi Indo" },
+    { id: "b3_jep", bab: 3, mode: "jep",    parent: "s3_1", x: 446, y: 1965, grass: "#FF5C8A", prop: "scrollJep",  code: "BAB 3 • KANAN", title: "Full Jepang" },
+    { id: "b4_mat", bab: 4, mode: "materi", parent: "s4_1", x: 104, y: 2505, grass: "#14C3A2", prop: "bookMateri", code: "BAB 4 • KIRI", title: "Materi Indo" },
+    { id: "b4_jep", bab: 4, mode: "jep",    parent: "s4_1", x: 446, y: 2505, grass: "#5B8CFF", prop: "scrollJep",  code: "BAB 4 • KANAN", title: "Full Jepang" },
+    { id: "b5_mat", bab: 5, mode: "materi", parent: "s5_1", x: 104, y: 3045, grass: "#FF8A3D", prop: "bookMateri", code: "BAB 5 • KIRI", title: "Materi Indo" },
+    { id: "b5_jep", bab: 5, mode: "jep",    parent: "s5_1", x: 446, y: 3045, grass: "#C9B8FF", prop: "scrollJep",  code: "BAB 5 • KANAN", title: "Full Jepang" },
+  ];
   const WORLD_H = 3770;
   const SAND = "M-74 18C-78-6-50-26-10-28 34-30 74-16 76 10 78 34 40 44 0 44-42 44-70 38-74 18Z";
   const GRASS = "M-62 6C-64-14-36-30-4-31 30-32 62-18 62 0 62 14 34 20 0 20-34 20-60 18-62 6Z";
@@ -1014,17 +1679,46 @@
     const cy = Math.round((b.y - a.y) * 0.55);
     return `M${a.x} ${a.y} C${a.x} ${a.y + cy} ${b.x} ${b.y - cy} ${b.x} ${b.y}`;
   };
+  const branchRouteD = (p, c) => {
+    const mx = Math.round((p.x + c.x) / 2);
+    const my = Math.min(p.y, c.y) - 34;
+    return `M${p.x} ${p.y} Q${mx} ${my} ${c.x} ${c.y}`;
+  };
 
-
+  function readerIsleSVG(b) {
+    const readKey = `b${b.bab}_${b.mode}`;
+    const isRead = !!(S.readBooks && S.readBooks[readKey]);
+    return `<g transform="translate(${b.x} ${b.y}) scale(0.72)">
+      <g class="isle isle--reader${isRead ? " is-read" : ""}" data-act="reader-node" data-bab="${b.bab}" data-mode="${b.mode}" role="button" tabindex="0" aria-label="Buka Minna no Nihongo Bab ${b.bab} ${b.title} di tab baru">
+        <g class="isle-inner">
+          <ellipse class="isle-water" cx="0" cy="26" rx="86" ry="23"/>
+          <path class="isle-sand" d="${SAND}"/>
+          <path class="isle-grass" d="${GRASS}" fill="${b.grass}"/>
+          <g class="isle-prop">${PROPS[b.prop]}</g>
+          ${isRead ? `<g transform="translate(52 -24)"><circle r="15" fill="#14C3A2" stroke="#1D1B3A" stroke-width="2.5"/><path d="M-6 0l4 4 8-9" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></g>` : ""}
+          <g class="isle-sign" transform="translate(0 68)">
+            <rect x="-86" y="-22" width="172" height="50" rx="16"/>
+            <text class="isle-code" y="-4">${b.code}</text>
+            <text class="isle-title" y="17">${b.title}</text>
+          </g>
+        </g>
+        <g class="isle-tab-badge" transform="translate(0 -66)">
+          <rect x="-38" y="-12" width="76" height="22" rx="11" fill="${b.mode === "materi" ? "#FFC63D" : "#FF5C8A"}" stroke="#1D1B3A" stroke-width="2.5"/>
+          <text y="3" font-family="'Fredoka', sans-serif" font-weight="700" font-size="10.5" fill="${b.mode === "materi" ? "#1D1B3A" : "#fff"}" text-anchor="middle">${b.mode === "materi" ? "MATERI ↗" : "JEPANG ↗"}</text>
+        </g>
+      </g>
+    </g>`;
+  }
 
   function isleSVG(n) {
     const P = ISLES[n.id];
     const sealed = S.fresh === n.id;
     const fog = n.state === "locked" || sealed;
     const stars = S.starsBy[n.id] || 0;
-    const status = sealed || n.state === "locked" ? "terkunci" : n.state === "done" ? "selesai" : "siap dimainkan";
+    const isLocked = sealed || n.state === "locked";
+    const status = isLocked ? "terkunci" : n.state === "done" ? "selesai" : n.playable ? "siap dimainkan" : "segera hadir";
     return `<g transform="translate(${P.x} ${P.y})${P.scale ? ` scale(${P.scale})` : ""}">
-      <g class="isle isle--${n.state}${sealed ? " is-sealed" : ""}" data-act="node" data-id="${n.id}" role="button" tabindex="0" aria-label="${n.label}, ${n.title}, ${status}">
+      <g class="isle isle--${n.state}${sealed ? " is-sealed" : ""}" data-act="node" data-id="${n.id}" role="button" tabindex="0"${isLocked ? ' aria-disabled="true"' : ""} aria-label="${n.label}, ${n.title}, ${status}">
         <g class="isle-inner">
           ${n.state === "current" ? `<ellipse class="isle-ripple" cx="0" cy="26" rx="88" ry="24"/>` : ""}
           <ellipse class="isle-water" cx="0" cy="26" rx="88" ry="24"/>
@@ -1057,7 +1751,7 @@
         </g>
         ${
           n.state === "current"
-            ? `<g transform="translate(0 -98)"><g class="isle-marker"><g class="isle-marker-bob"><rect x="-42" y="-16" width="84" height="32" rx="16"/><text y="6">MULAI!</text><path d="M-8 15l8 10 8-10" /></g></g></g>`
+            ? `<g transform="translate(0 -98)"><g class="isle-marker${n.playable ? "" : " isle-marker--soon"}"><g class="isle-marker-bob"><rect x="-42" y="-16" width="84" height="32" rx="16"/><text y="6">${n.playable ? "MULAI!" : "SEGERA"}</text><path d="M-8 15l8 10 8-10" /></g></g></g>`
             : ""
         }
       </g>
@@ -1073,20 +1767,19 @@
       const d = routeD(ISLES[ids[i]], ISLES[ids[i + 1]]);
       const fresh = S.fresh === to.id;
       if (fresh)
-        masks += `<mask id="reveal-${to.id}" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="${WORLD_H}"><path d="${d}" fill="none" stroke="#fff" stroke-width="18" style="stroke-dasharray:5000;stroke-dashoffset:5000"/></mask>`;
+        masks += `<mask id="reveal-${to.id}" maskUnits="userSpaceOnUse" x="-122" y="0" width="644" height="${WORLD_H}"><path d="${d}" fill="none" stroke="#fff" stroke-width="18" style="stroke-dasharray:5000;stroke-dashoffset:5000"/></mask>`;
       routes += `<path class="route${to.state === "locked" && !fresh ? " route--locked" : ""}" data-to="${to.id}" d="${d}"${fresh ? ` mask="url(#reveal-${to.id})"` : ""}/>`;
     }
-    return `<svg class="world-svg" viewBox="0 0 400 ${WORLD_H}" role="group" aria-label="Peta pulau Nihongo Quest">
+    const branchRoutes = BRANCH_NODES.map((b) => {
+      const p = ISLES[b.parent];
+      return `<path class="route--branch" d="${branchRouteD(p, b)}"/>`;
+    }).join("");
+
+    return `<svg class="world-svg" viewBox="-122 0 644 ${WORLD_H}" role="group" aria-label="Peta pulau Nihongo Quest">
       <defs>
-        <pattern id="waves" width="80" height="58" patternUnits="userSpaceOnUse">
-          <path d="M8 16q7-7 14 0t14 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".75"/>
-          <path d="M48 46q7-7 14 0t14 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".75"/>
-        </pattern>
         ${masks}
       </defs>
-      <rect class="sea" x="2" y="2" width="396" height="${WORLD_H - 4}" rx="30"/>
-      <rect x="2" y="2" width="396" height="${WORLD_H - 4}" rx="30" fill="url(#waves)"/>
-      <g class="routes">${routes}</g>
+      <g class="routes">${branchRoutes}${routes}</g>
       <g class="boat-layer"></g>
       <g class="chapter-banner" transform="translate(200 285)">
         <rect x="-102" y="-15" width="204" height="30" rx="15" fill="#FF5C8A" stroke="#1D1B3A" stroke-width="2.5"/>
@@ -1112,7 +1805,7 @@
         <rect x="-102" y="-15" width="204" height="30" rx="15" fill="#C9B8FF" stroke="#1D1B3A" stroke-width="2.5"/>
         <text x="0" y="5" font-family="'Fredoka', sans-serif" font-weight="700" font-size="11.5" fill="#1D1B3A" text-anchor="middle">GERBANG BAB 6</text>
       </g>
-      <g class="isles">${S.nodes.map(isleSVG).join("")}</g>
+      <g class="isles">${BRANCH_NODES.map(readerIsleSVG).join("")}${S.nodes.map(isleSVG).join("")}</g>
     </svg>`;
   }
 
@@ -1173,7 +1866,7 @@
     </svg>`,
   };
 
-  function renderStatCardContent(type, streakVal, xpVal, starsVal, totalStages, doneStages, daysHtml, lvl, curXp, xpPercent) {
+  function renderStatCardContent(type, streakVal, xpVal, starsVal, totalStages, doneStages, daysHtml, lvl, curXp, xpPercent, streakInfo) {
     if (type === "xp") {
       return `
         <div class="stat-card stat-card--xp">
@@ -1222,6 +1915,19 @@
       `;
     }
     // Default: streak
+    const sInfo = streakInfo || getStreakStats();
+    const sDaysHtml = daysHtml || buildStreakDaysHtml(sInfo.days);
+    const sMsg = sInfo.studiedToday
+      ? "Api belajarmu membara! Belajar rutin setiap hari agar apimu tidak padam."
+      : sInfo.count > 0
+        ? `Streak ${sInfo.count} hari menunggu! Belajar hari ini agar apimu tidak padam.`
+        : "Selesaikan 1 stage atau baca buku hari ini untuk menyalakan streak!";
+    const sBadge = sInfo.studiedToday
+      ? "Aktif Hari Ini 🔥"
+      : sInfo.count > 0
+        ? "Belajar Hari Ini ⏳"
+        : "Mulai Hari Ini ✨";
+    const sRecord = sInfo.longest > 1 ? ` · Rekor ${sInfo.longest} hr` : "";
     return `
       <div class="stat-card stat-card--streak">
         ${STAT_ASSETS.flameCrest}
@@ -1235,32 +1941,20 @@
             <span class="card-tag">🔥 HARI BERUNTUN</span>
           </div>
           <div class="card-count">${streakVal} Hari</div>
-          <p class="card-msg">Api belajarmu membara! Belajar setiap hari sebelum tengah malam agar apimu tidak padam.</p>
+          <p class="card-msg">${sMsg}</p>
           <div class="card-extra">
-            <div class="streak-days" aria-label="Tracker 7 hari">${daysHtml}</div>
-            <span style="font-size:11px; font-weight:700; margin-left:4px;">Streak Aktif 🔥</span>
+            <div class="streak-days" aria-label="Tracker 7 hari">${sDaysHtml}</div>
+            <span class="streak-status-txt" style="font-size:11px; font-weight:700; margin-left:4px;">${sBadge}${sRecord}</span>
           </div>
         </div>
       </div>
     `;
   }
 
-  function renderStatsSection(streakVal, xpVal, starsVal, totalStages, doneStages) {
-    const days = [
-      { d: "S", lit: true },
-      { d: "S", lit: true },
-      { d: "R", lit: true },
-      { d: "K", lit: true, today: true },
-      { d: "J", lit: false },
-      { d: "S", lit: false },
-      { d: "M", lit: false },
-    ];
-    const daysHtml = days
-      .map(
-        (day) =>
-          `<span class="day-dot${day.lit ? " is-lit" : ""}${day.today ? " is-today" : ""}">${day.d}</span>`
-      )
-      .join("");
+  function renderStatsSection(streakInfo, xpVal, starsVal, totalStages, doneStages) {
+    const sInfo = typeof streakInfo === "object" && streakInfo ? streakInfo : getStreakStats();
+    const streakVal = sInfo.count;
+    const daysHtml = buildStreakDaysHtml(sInfo.days);
 
     const lvl = Math.floor(xpVal / 250) + 1;
     const curXp = xpVal % 250;
@@ -1287,7 +1981,7 @@
         </div>
         <div class="stat-card-wrap">
           <div class="stat-card-content">
-            ${renderStatCardContent(S.openedStat || "streak", streakVal, xpVal, starsVal, totalStages, doneStages, daysHtml, lvl, curXp, xpPercent)}
+            ${renderStatCardContent(S.openedStat || "streak", streakVal, xpVal, starsVal, totalStages, doneStages, daysHtml, lvl, curXp, xpPercent, sInfo)}
           </div>
           <button class="stat-card-close" type="button" data-act="stat-close" aria-label="Tutup tampilan dalam">×</button>
           <div class="card-nav-tabs">
@@ -1308,22 +2002,8 @@
     const stages = S.nodes.filter((n) => n.stage);
     const done = stages.filter((n) => n.state === "done").length;
     const stars = Object.values(S.starsBy).reduce((a, b) => a + b, 0);
-
-    const days = [
-      { d: "S", lit: true },
-      { d: "S", lit: true },
-      { d: "R", lit: true },
-      { d: "K", lit: true, today: true },
-      { d: "J", lit: false },
-      { d: "S", lit: false },
-      { d: "M", lit: false },
-    ];
-    const daysHtml = days
-      .map(
-        (day) =>
-          `<span class="day-dot${day.lit ? " is-lit" : ""}${day.today ? " is-today" : ""}">${day.d}</span>`
-      )
-      .join("");
+    const sInfo = getStreakStats();
+    const daysHtml = buildStreakDaysHtml(sInfo.days);
 
     const lvl = Math.floor(S.xpTotal / 250) + 1;
     const curXp = S.xpTotal % 250;
@@ -1332,7 +2012,7 @@
     if (content) {
       content.innerHTML = renderStatCardContent(
         type,
-        D1.stats.streak + 1,
+        sInfo.count,
         S.xpTotal,
         stars,
         stages.length,
@@ -1340,7 +2020,8 @@
         daysHtml,
         lvl,
         curXp,
-        xpPercent
+        xpPercent,
+        sInfo
       );
     }
 
@@ -1366,6 +2047,7 @@
   }
 
   function openTopicModal(babKey, topicIdx) {
+    S.prevFocus = document.activeElement;
     const bab = BAB_MATERIALS[babKey];
     if (!bab || !bab.topics || !bab.topics[topicIdx]) return;
     const topic = bab.topics[topicIdx];
@@ -1454,12 +2136,16 @@
     root.appendChild(modalRoot);
     document.body.classList.add("modal-open");
     SFX.select();
+    const closeBtn = modalRoot.querySelector(".topic-modal-close");
+    if (closeBtn) setTimeout(() => closeBtn.focus(), 60);
   }
 
   function closeTopicModal(instant = false) {
     const modalRoot = document.getElementById("topic-modal-root");
     if (!modalRoot) return;
     document.body.classList.remove("modal-open");
+    const restore = S.prevFocus;
+    S.prevFocus = null;
     if (instant) {
       modalRoot.remove();
       return;
@@ -1468,7 +2154,601 @@
     modalRoot.classList.add("is-closing");
     setTimeout(() => {
       if (modalRoot.parentElement) modalRoot.remove();
+      if (restore && typeof restore.focus === "function") try { restore.focus(); } catch {}
     }, 180);
+  }
+
+  // ---------- Fitur Masuk Web / Login & Google Auth (Figma Untitled 8) ----------
+  function updateTopDockAuth() {
+    const avatarBtn = root ? root.querySelector('.dock-btn--avatar') : null;
+    if (!avatarBtn) return;
+    avatarBtn.classList.toggle("is-logged-in", !!S.user);
+    avatarBtn.setAttribute("aria-label", S.user ? `Akun: ${S.user.name}` : "Masuk ke Akun");
+    let badge = avatarBtn.querySelector(".dock-avatar-badge");
+    if (S.user) {
+      if (!badge) {
+        const inner = avatarBtn.querySelector(".dock-avatar-inner");
+        if (inner) {
+          badge = document.createElement("span");
+          badge.className = "dock-avatar-badge";
+          badge.title = "Terhubung";
+          inner.appendChild(badge);
+        }
+      }
+    } else {
+      if (badge) badge.remove();
+    }
+  }
+
+  function openLoginModal() {
+    S.prevFocus = document.activeElement;
+    closeTopicModal(true);
+    closeLoginModal(true);
+
+    const modalRoot = document.createElement("div");
+    modalRoot.id = "login-modal-root";
+    modalRoot.className = "login-modal-overlay";
+    modalRoot.setAttribute("role", "dialog");
+    modalRoot.setAttribute("aria-modal", "true");
+    modalRoot.setAttribute("aria-label", "Masuk atau Daftar Akun Nihongo Quest");
+
+    const svgBg = (window.FRAME15_LOGIN_SVG || "").replace(
+      '<svg class="login-svg-bg"',
+      '<svg class="login-svg-bg" preserveAspectRatio="xMidYMid slice"'
+    );
+
+    let authMode = "login"; // "login" | "register"
+
+    modalRoot.innerHTML = `
+      <div class="login-modal-card">
+        ${svgBg}
+        <button class="login-close-btn" type="button" aria-label="Tutup" data-login-act="close">✕</button>
+        <div class="login-form-overlay">
+          <!-- Mobile Only Avatar Header -->
+          <div class="mobile-only-header">
+            <div class="mobile-avatar">
+              <svg viewBox="1280 960 810 770" fill="none">
+                <path d="M1837.94 1015.6C1980.34 1064.19 2082.74 1199.12 2082.74 1357.97C2082.74 1557.71 1920.82 1719.63 1721.08 1719.63C1652.94 1719.63 1589.21 1700.79 1534.8 1668.03C1571.46 1680.54 1610.77 1687.33 1651.67 1687.33C1851.41 1687.33 2013.33 1525.41 2013.33 1325.67C2013.33 1194.06 1943.04 1078.87 1837.94 1015.6ZM1651.67 964C1719.8 964 1783.54 982.843 1837.94 1015.6C1801.28 1003.09 1761.97 996.299 1721.08 996.299C1521.33 996.299 1359.41 1158.22 1359.41 1357.97C1359.41 1489.57 1429.71 1604.76 1534.8 1668.03C1392.4 1619.44 1290 1484.51 1290 1325.67C1290 1125.92 1451.92 964 1651.67 964Z" fill="#1D1B3A"/>
+                <path d="M1685.17 1626.93C1527.79 1626.93 1400.2 1499.35 1400.2 1341.97C1400.2 1184.59 1527.79 1057 1685.17 1057C1842.55 1057 1970.13 1184.59 1970.13 1341.97C1970.13 1499.35 1842.55 1626.93 1685.17 1626.93Z" stroke-width="41.7" stroke-linecap="round" stroke-linejoin="round" stroke="#1D1B3A"/>
+                <path d="M1794.43 1292.2C1794.54 1306.58 1791.79 1320.84 1786.34 1334.15C1780.89 1347.45 1772.84 1359.54 1762.68 1369.71C1752.51 1379.88 1740.42 1387.92 1727.11 1393.37C1713.81 1398.82 1699.55 1401.57 1685.17 1401.46C1663.56 1401.46 1642.44 1395.06 1624.47 1383.05C1606.5 1371.04 1592.5 1353.98 1584.23 1334.02C1575.96 1314.05 1573.79 1292.08 1578.01 1270.89C1582.23 1249.69 1592.63 1230.23 1607.91 1214.95C1623.19 1199.67 1642.66 1189.26 1663.85 1185.04C1685.05 1180.83 1707.02 1182.99 1726.98 1191.26C1746.95 1199.53 1764.01 1213.53 1776.02 1231.5C1788.02 1249.47 1794.43 1270.59 1794.43 1292.2Z" stroke-width="41.7" stroke-linecap="round" stroke-linejoin="round" stroke="#1D1B3A"/>
+                <path d="M1854.75 1571.05C1854.75 1526.07 1836.89 1482.94 1805.08 1451.13C1773.28 1419.33 1730.14 1401.46 1685.17 1401.46C1640.19 1401.46 1597.05 1419.33 1565.25 1451.13C1533.44 1482.94 1515.58 1526.07 1515.58 1571.05" stroke-width="41.7" stroke-linecap="round" stroke-linejoin="round" stroke="#1D1B3A"/>
+              </svg>
+            </div>
+            <div>
+              <div class="mobile-title" id="loginModalTitle">Masuk Akun</div>
+              <div class="mobile-subtitle" id="loginModalSub">Simpan progres petualanganmu</div>
+            </div>
+          </div>
+
+          <!-- Mode Switcher Tabs -->
+          <div class="auth-mode-tabs" role="tablist" aria-label="Mode Akun">
+            <button type="button" class="auth-tab is-active" id="tabModeLogin" data-auth-mode="login" role="tab" aria-selected="true">Masuk</button>
+            <button type="button" class="auth-tab" id="tabModeRegister" data-auth-mode="register" role="tab" aria-selected="false">Daftar</button>
+          </div>
+
+          <form id="loginForm" novalidate onsubmit="return false;" style="display:flex; flex-direction:column; gap:inherit;">
+            <div>
+              <label class="login-field-label" for="loginUser">Username:</label>
+              <input type="text" id="loginUser" class="login-input" placeholder="Masukkan username..." autocomplete="username" required>
+            </div>
+            <div>
+              <label class="login-field-label" for="loginPass">Password:</label>
+              <input type="password" id="loginPass" class="login-input" placeholder="Masukkan password..." autocomplete="current-password" required>
+            </div>
+            <div class="login-actions-row">
+              <button type="submit" class="btn-submit-login" id="btnAuthSubmit">Masuk</button>
+            </div>
+          </form>
+
+          <div class="auth-toggle-hint" id="authToggleHint">
+            Belum punya akun? <button type="button" class="auth-toggle-btn" id="btnSwitchMode">Daftar sekarang</button>
+          </div>
+
+          <div class="login-divider-wrap" aria-hidden="true">
+            <span class="login-divider-line"></span>
+            <span class="login-divider-text">ATAU</span>
+            <span class="login-divider-line"></span>
+          </div>
+
+          <button type="button" class="btn-google-login" id="btnGoogleAuth" aria-label="Masuk dengan Google">
+            <svg class="google-btn-icon" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span class="google-btn-text" id="googleBtnText">MASUK DENGAN GOOGLE</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      const tabLogin = modalRoot.querySelector("#tabModeLogin");
+      const tabRegister = modalRoot.querySelector("#tabModeRegister");
+      const btnSubmit = modalRoot.querySelector("#btnAuthSubmit");
+      const hint = modalRoot.querySelector("#authToggleHint");
+      const title = modalRoot.querySelector("#loginModalTitle");
+      const sub = modalRoot.querySelector("#loginModalSub");
+      const pass = modalRoot.querySelector("#loginPass");
+      const gText = modalRoot.querySelector("#googleBtnText");
+
+      if (tabLogin) {
+        tabLogin.classList.toggle("is-active", mode === "login");
+        tabLogin.setAttribute("aria-selected", mode === "login");
+      }
+      if (tabRegister) {
+        tabRegister.classList.toggle("is-active", mode === "register");
+        tabRegister.setAttribute("aria-selected", mode === "register");
+      }
+
+      if (mode === "login") {
+        if (btnSubmit) btnSubmit.textContent = "Masuk";
+        if (pass) pass.setAttribute("autocomplete", "current-password");
+        if (title) title.textContent = "Masuk Akun";
+        if (sub) sub.textContent = "Lanjutkan progres petualanganmu";
+        if (gText) gText.textContent = "MASUK DENGAN GOOGLE";
+        if (hint) {
+          hint.innerHTML = 'Belum punya akun? <button type="button" class="auth-toggle-btn" id="btnSwitchMode">Daftar sekarang</button>';
+          wireSwitch();
+        }
+      } else {
+        if (btnSubmit) btnSubmit.textContent = "Daftar Akun";
+        if (pass) pass.setAttribute("autocomplete", "new-password");
+        if (title) title.textContent = "Daftar Akun Baru";
+        if (sub) sub.textContent = "Mulai petualangan bahasa Jepangmu";
+        if (gText) gText.textContent = "DAFTAR DENGAN GOOGLE";
+        if (hint) {
+          hint.innerHTML = 'Sudah punya akun? <button type="button" class="auth-toggle-btn" id="btnSwitchMode">Masuk ke akun</button>';
+          wireSwitch();
+        }
+      }
+    }
+
+    function wireSwitch() {
+      const btn = modalRoot.querySelector("#btnSwitchMode");
+      if (btn) {
+        btn.addEventListener("click", () => {
+          SFX.tap();
+          setAuthMode(authMode === "login" ? "register" : "login");
+        });
+      }
+    }
+
+    modalRoot.querySelectorAll(".auth-tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const mode = tab.dataset.authMode;
+        if (mode && mode !== authMode) {
+          SFX.tap();
+          setAuthMode(mode);
+        }
+      });
+    });
+
+    wireSwitch();
+
+    modalRoot.addEventListener("click", (e) => {
+      if (e.target === modalRoot || e.target.closest('[data-login-act="close"]')) {
+        closeLoginModal();
+      }
+    });
+
+    const form = modalRoot.querySelector("#loginForm");
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        handleAuthSubmit(modalRoot, authMode);
+      });
+    }
+
+    const btnGoogle = modalRoot.querySelector("#btnGoogleAuth");
+    if (btnGoogle) {
+      btnGoogle.addEventListener("click", () => {
+        SFX.tap();
+        openGoogleAuthSelector(modalRoot);
+      });
+    }
+
+    document.body.appendChild(modalRoot);
+    document.body.classList.add("modal-open");
+    SFX.select();
+
+    const userInput = modalRoot.querySelector("#loginUser");
+    if (userInput) setTimeout(() => userInput.focus(), 120);
+  }
+
+  function closeLoginModal(instant = false) {
+    const modalRoot = document.getElementById("login-modal-root");
+    if (!modalRoot) return;
+    document.body.classList.remove("modal-open");
+    const restore = S.prevFocus;
+    S.prevFocus = null;
+    if (instant) {
+      modalRoot.remove();
+      return;
+    }
+    SFX.tap();
+    modalRoot.classList.add("is-closing");
+    setTimeout(() => {
+      if (modalRoot.parentElement) modalRoot.remove();
+      if (restore && typeof restore.focus === "function") try { restore.focus(); } catch {}
+    }, 200);
+  }
+
+  async function handleAuthSubmit(modalRoot, authMode) {
+    const userInput = modalRoot.querySelector("#loginUser");
+    const passInput = modalRoot.querySelector("#loginPass");
+    const username = userInput ? userInput.value.trim() : "";
+    const password = passInput ? passInput.value.trim() : "";
+
+    const shake = () => {
+      const card = modalRoot.querySelector(".login-modal-card");
+      if (card) {
+        card.classList.remove("is-shaking");
+        void card.offsetWidth;
+        card.classList.add("is-shaking");
+      }
+      SFX.wrong();
+    };
+
+    if (!username || !password) {
+      shake();
+      toast("Harap isi username dan password!");
+      return;
+    }
+
+    const cleanId = username.toLowerCase().trim();
+    const all = getAllAccounts();
+
+    if (authMode === "register") {
+      if (username.length < 3) {
+        shake();
+        toast("Username minimal 3 karakter!");
+        return;
+      }
+      if (password.length < 4) {
+        shake();
+        toast("Password minimal 4 karakter!");
+        return;
+      }
+      if (all[cleanId]) {
+        shake();
+        toast(`Username "${username}" sudah terdaftar! Silakan masuk.`);
+        return;
+      }
+
+      const userObj = {
+        id: null,
+        name: username,
+        email: `${cleanId.replace(/[^a-z0-9]/g, "")}@nihongo.id`,
+        password: password,
+        provider: "local",
+        createdAt: Date.now(),
+      };
+
+      // Coba simpan ke MySQL jika server backend aktif
+      try {
+        const res = await fetch(`${API_MYSQL_URL}?action=register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: username,
+            email: userObj.email,
+            password: password,
+          }),
+        });
+        const json = await res.json();
+        if (json && json.ok && json.user) {
+          userObj.id = json.user.id;
+        }
+      } catch (err) {
+        // fallback offline
+      }
+
+      saveAccount(userObj);
+      S.user = { id: userObj.id, name: userObj.name, email: userObj.email, provider: userObj.provider, loginAt: Date.now() };
+      store.set("nq-user", JSON.stringify(S.user));
+      updateTopDockAuth();
+
+      // Inisialisasi akun baru: Bab 1, 0 XP, 0 Bintang, Streak Hari 1
+      loadProgress(true);
+      if (S.screen === "map") renderMap();
+
+      SFX.unlock();
+      const msg = userObj.id ? `Akun "${username}" tersimpan ke MySQL! Selamat bertualang! 🌟` : `Akun "${username}" berhasil dibuat! Selamat bertualang! 🌟`;
+      toast(msg);
+      Buddy.say(`Selamat datang di Nihongo Quest, ${username}! Yuk mulai dari Bab 1! 🎉`, 3200);
+      closeLoginModal();
+    } else {
+      // Login
+      let mysqlSuccess = false;
+      try {
+        const res = await fetch(`${API_MYSQL_URL}?action=login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            identifier: username,
+            password: password,
+          }),
+        });
+        const json = await res.json();
+        if (json && json.ok && json.user) {
+          mysqlSuccess = true;
+          const userObj = {
+            id: json.user.id,
+            name: json.user.username,
+            email: json.user.email,
+            password: password,
+            provider: "local",
+            createdAt: Date.now(),
+          };
+          saveAccount(userObj);
+          S.user = {
+            id: json.user.id,
+            name: json.user.username,
+            email: json.user.email,
+            provider: "local",
+            loginAt: Date.now(),
+          };
+          if (json.progress) {
+            if (json.progress.active_stage_id) S.activeStageId = json.progress.active_stage_id;
+            if (typeof json.progress.xp_total === "number") S.xpTotal = json.progress.xp_total;
+            if (json.progress.stars_by_json) {
+              try { S.starsBy = JSON.parse(json.progress.stars_by_json); } catch {}
+            }
+          }
+        }
+      } catch (err) {
+        // fallback offline
+      }
+
+      if (!mysqlSuccess) {
+        const acc = all[cleanId];
+        if (!acc) {
+          shake();
+          toast(`Akun "${username}" belum terdaftar. Silakan pilih tab "Daftar" untuk membuat akun baru!`);
+          return;
+        }
+        if (acc.password && acc.password !== password) {
+          shake();
+          toast("Password salah! Silakan coba lagi.");
+          return;
+        }
+
+        S.user = {
+          id: acc.id || null,
+          name: acc.name,
+          email: acc.email,
+          provider: acc.provider || "local",
+          loginAt: Date.now(),
+        };
+      }
+
+      store.set("nq-user", JSON.stringify(S.user));
+      updateTopDockAuth();
+
+      // Muat progres tersimpan milik akun ini
+      if (!mysqlSuccess) loadProgress(false);
+      else saveProgress();
+      if (S.screen === "map") renderMap();
+
+      SFX.unlock();
+      toast(`Selamat datang kembali, ${S.user.name}! ${mysqlSuccess ? "(MySQL Sync)" : ""} 🎉`);
+      Buddy.say(`Senang melihatmu kembali, ${S.user.name}! Siap bertualang?`, 3000);
+      closeLoginModal();
+    }
+  }
+
+  function openGoogleAuthSelector(modalRoot) {
+    const card = modalRoot.querySelector(".login-modal-card");
+    if (!card) return;
+
+    let selector = card.querySelector(".google-select-overlay");
+    if (!selector) {
+      selector = document.createElement("div");
+      selector.className = "google-select-overlay";
+      card.appendChild(selector);
+    }
+
+    selector.innerHTML = `
+      <div class="google-select-card">
+        <div class="google-select-header">
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <div class="google-select-title">Pilih Akun Google</div>
+        </div>
+        <div class="google-account-list">
+          <button type="button" class="google-account-item" data-gname="Kakha" data-gemail="kakha.nihongo@gmail.com">
+            <div class="google-user-avatar">K</div>
+            <div>
+              <div class="google-account-name">Kakha</div>
+              <div class="google-account-email">kakha.nihongo@gmail.com</div>
+            </div>
+          </button>
+          <button type="button" class="google-account-item" data-gname="Petualang Nihongo" data-gemail="quest.learner@gmail.com">
+            <div class="google-user-avatar" style="background:#10B981;">P</div>
+            <div>
+              <div class="google-account-name">Petualang Nihongo</div>
+              <div class="google-account-email">quest.learner@gmail.com</div>
+            </div>
+          </button>
+        </div>
+        <button type="button" class="btn" data-login-act="cancel-google" style="background:#F3F4F6; color:#374151; border:1.5px solid #D1D5DB; border-radius:999px; height:36px; font-weight:700;">Batal</button>
+      </div>
+    `;
+
+    selector.addEventListener("click", (e) => {
+      const cancel = e.target.closest('[data-login-act="cancel-google"]');
+      if (cancel || e.target === selector) {
+        SFX.tap();
+        selector.remove();
+        return;
+      }
+
+      const item = e.target.closest(".google-account-item");
+      if (item) {
+        const name = item.dataset.gname;
+        const email = item.dataset.gemail;
+
+        selector.innerHTML = `
+          <div class="google-select-card" style="text-align:center;">
+            <div class="google-loading-state">
+              <div class="google-spinner"></div>
+              <div style="font-family:var(--disp); font-size:1.05rem; font-weight:700; color:var(--ink);">Menghubungkan ke Google...</div>
+              <div style="font-size:0.85rem; color:#6B7280;">Mengautentikasi ${email}</div>
+            </div>
+          </div>
+        `;
+        SFX.tap();
+
+        setTimeout(() => {
+          const all = getAllAccounts();
+          const cleanEmail = email.toLowerCase().trim();
+          const isNewGoogle = !all[cleanEmail];
+
+          const userObj = {
+            name: name,
+            email: email,
+            provider: "google",
+            createdAt: all[cleanEmail]?.createdAt || Date.now(),
+            loginAt: Date.now(),
+          };
+          saveAccount(userObj);
+
+          S.user = { name: userObj.name, email: userObj.email, provider: "google", loginAt: Date.now() };
+          store.set("nq-user", JSON.stringify(S.user));
+          updateTopDockAuth();
+
+          loadProgress(isNewGoogle);
+          if (S.screen === "map") renderMap();
+
+          SFX.unlock();
+          if (isNewGoogle) {
+            toast(`Berhasil mendaftar dengan Google: ${name}! ✨`);
+            Buddy.say(`Akun Google terhubung! Selamat datang, ${name}! 🎉`, 3000);
+          } else {
+            toast(`Selamat datang kembali, ${name}! ✨`);
+            Buddy.say(`Akun Google terhubung! Siap melanjutkan petualangan?`, 3000);
+          }
+          closeLoginModal();
+        }, 850);
+      }
+    });
+  }
+
+  function openAccountModal() {
+    S.prevFocus = document.activeElement;
+    closeTopicModal(true);
+    closeLoginModal(true);
+
+    const modalRoot = document.createElement("div");
+    modalRoot.id = "topic-modal-root";
+    modalRoot.className = "topic-modal-backdrop";
+    modalRoot.setAttribute("role", "dialog");
+    modalRoot.setAttribute("aria-modal", "true");
+    modalRoot.setAttribute("aria-label", "Informasi Akun");
+
+    const user = S.user || { name: "Petualang (Tamu)", email: "Belum masuk akun", provider: "guest" };
+    const isGoogle = user.provider === "google";
+    const isGuest = !S.user;
+    const accStars = Object.values(S.starsBy || {}).reduce((a, b) => a + b, 0);
+    const accDone = S.nodes.filter((n) => n.stage && n.state === "done").length;
+
+    modalRoot.innerHTML = `
+      <div class="topic-modal-card" style="max-width:440px;">
+        <div class="topic-modal-header" style="background:#FFF6DE;">
+          <div class="topic-modal-badge topic-header-tag">PROFIL PENGGUNA</div>
+          <div class="topic-modal-title">Akun Nihongo Quest</div>
+          <button class="topic-modal-close" type="button" data-act="topic-modal-close" aria-label="Tutup">✕</button>
+        </div>
+
+        <div class="topic-modal-body" style="padding:20px 24px;">
+          <div class="account-profile-card">
+            <div class="account-avatar-large">
+              <svg viewBox="1280 960 810 770" fill="none">
+                <path d="M1837.94 1015.6C1980.34 1064.19 2082.74 1199.12 2082.74 1357.97C2082.74 1557.71 1920.82 1719.63 1721.08 1719.63C1652.94 1719.63 1589.21 1700.79 1534.8 1668.03C1571.46 1680.54 1610.77 1687.33 1651.67 1687.33C1851.41 1687.33 2013.33 1525.41 2013.33 1325.67C2013.33 1194.06 1943.04 1078.87 1837.94 1015.6ZM1651.67 964C1719.8 964 1783.54 982.843 1837.94 1015.6C1801.28 1003.09 1761.97 996.299 1721.08 996.299C1521.33 996.299 1359.41 1158.22 1359.41 1357.97C1359.41 1489.57 1429.71 1604.76 1534.8 1668.03C1392.4 1619.44 1290 1484.51 1290 1325.67C1290 1125.92 1451.92 964 1651.67 964Z" fill="#1D1B3A"/>
+                <path d="M1685.17 1626.93C1527.79 1626.93 1400.2 1499.35 1400.2 1341.97C1400.2 1184.59 1527.79 1057 1685.17 1057C1842.55 1057 1970.13 1184.59 1970.13 1341.97C1970.13 1499.35 1842.55 1626.93 1685.17 1626.93Z" stroke-width="41.7" stroke-linecap="round" stroke-linejoin="round" stroke="#1D1B3A"/>
+                <path d="M1794.43 1292.2C1794.54 1306.58 1791.79 1320.84 1786.34 1334.15C1780.89 1347.45 1772.84 1359.54 1762.68 1369.71C1752.51 1379.88 1740.42 1387.92 1727.11 1393.37C1713.81 1398.82 1699.55 1401.57 1685.17 1401.46C1663.56 1401.46 1642.44 1395.06 1624.47 1383.05C1606.5 1371.04 1592.5 1353.98 1584.23 1334.02C1575.96 1314.05 1573.79 1292.08 1578.01 1270.89C1582.23 1249.69 1592.63 1230.23 1607.91 1214.95C1623.19 1199.67 1642.66 1189.26 1663.85 1185.04C1685.05 1180.83 1707.02 1182.99 1726.98 1191.26C1746.95 1199.53 1764.01 1213.53 1776.02 1231.5C1788.02 1249.47 1794.43 1270.59 1794.43 1292.2Z" stroke-width="41.7" stroke-linecap="round" stroke-linejoin="round" stroke="#1D1B3A"/>
+                <path d="M1854.75 1571.05C1854.75 1526.07 1836.89 1482.94 1805.08 1451.13C1773.28 1419.33 1730.14 1401.46 1685.17 1401.46C1640.19 1401.46 1597.05 1419.33 1565.25 1451.13C1533.44 1482.94 1515.58 1526.07 1515.58 1571.05" stroke-width="41.7" stroke-linecap="round" stroke-linejoin="round" stroke="#1D1B3A"/>
+              </svg>
+            </div>
+            <div class="account-user-name">${user.name}</div>
+            <div class="account-badge-pill">
+              ${isGoogle ? '✓ Terhubung dengan Google' : isGuest ? 'Mode Tamu (Belum Masuk)' : '✓ Akun Terdaftar'}
+            </div>
+            <div class="account-email-text">${user.email}</div>
+
+            <div class="account-mini-stats">
+              <div class="account-mini-stat"><strong>${S.xpTotal}</strong><span>Total XP</span></div>
+              <div class="account-mini-stat"><strong>${accStars}</strong><span>Bintang</span></div>
+              <div class="account-mini-stat"><strong>${accDone}/12</strong><span>Pulau</span></div>
+            </div>
+
+            <div class="account-actions-group">
+              <button type="button" class="btn-account-stats" id="btnViewStats">
+                📊 Lihat Statistik Belajar
+              </button>
+              <button type="button" class="btn-account-logout" id="btnLogoutUser">
+                ${isGuest ? '🔐 Masuk / Daftar Akun' : 'Keluar / Ganti Akun'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    modalRoot.addEventListener("click", (e) => {
+      if (e.target === modalRoot) {
+        closeTopicModal();
+      }
+    });
+
+    const btnStats = modalRoot.querySelector("#btnViewStats");
+    if (btnStats) {
+      btnStats.addEventListener("click", () => {
+        closeTopicModal(true);
+        openStatCard("streak");
+        Buddy.say("Ini progres dan statistik belajarmu!", 2800);
+      });
+    }
+
+    const btnLogout = modalRoot.querySelector("#btnLogoutUser");
+    if (btnLogout) {
+      btnLogout.addEventListener("click", () => {
+        if (isGuest) {
+          closeTopicModal(true);
+          openLoginModal();
+        } else {
+          handleLogout();
+          closeTopicModal();
+        }
+      });
+    }
+
+    root.appendChild(modalRoot);
+    document.body.classList.add("modal-open");
+    SFX.select();
+    const closeBtn = modalRoot.querySelector(".topic-modal-close");
+    if (closeBtn) setTimeout(() => closeBtn.focus(), 60);
+  }
+
+  function handleLogout() {
+    S.user = null;
+    store.remove("nq-user");
+    updateTopDockAuth();
+
+    // Beralih ke progres mode tamu
+    loadProgress(false);
+    if (S.screen === "map") renderMap();
+
+    SFX.tap();
+    toast("Kamu telah keluar dari akun. Progresmu tetap tersimpan aman di akun.");
+    Buddy.say("Sampai jumpa lagi! Datamu tersimpan aman di akun.", 2600);
   }
 
   function renderGenshinBanner(activeUnit, activeBabKey, babMeta, totalStages, doneStages) {
@@ -1478,46 +2758,48 @@
       sub: activeUnit.sub || activeUnit.desc || "",
       topics: [],
     };
-    const num = mat.num;
-    const [rawKana, rawRomaji] = (mat.title || activeUnit.title || "").split("|");
+    const num = parseInt(mat.num || activeBabKey.replace("b", ""), 10) || 1;
+    const progressIdx = Math.max(0, Math.min(12, Number.isFinite(doneStages) ? doneStages : 0));
+
+    const rawTitle = mat.title || (activeUnit && activeUnit.title) || "";
+    const [rawKana, rawRomaji] = rawTitle.includes("|") ? rawTitle.split("|") : [rawTitle, ""];
+
+    const bannerSvg = window.generateGenshinBannerSvg ? window.generateGenshinBannerSvg(num, progressIdx) : "";
 
     return `
       <div class="genshin-banner-wrapper">
         <div class="banner-master-wrap">
-          <img src="assets/u6/banner_perfect_transparent.png" class="banner-master-img" alt="Genshin Banner">
+          ${bannerSvg}
 
-          <div class="board-bab-title-overlay">
-            <h2 class="board-bab-title-text">BAB ${num}</h2>
-          </div>
-
-          <div class="board-material-overlay">
-            <div class="board-bab-chips">
-              ${babMeta
-                .map((b) => {
-                  const isActive = b.key === activeBabKey;
-                  return `<button class="board-bab-chip ${isActive ? "active" : ""}" data-act="select-bab" data-bab="${b.key}">${b.label.toUpperCase()}</button>`;
-                })
-                .join("")}
+          <div class="banner-v9-material-overlay">
+            <div class="banner-v9-header-text">
+              <h3 class="banner-v9-jp-title">${rawKana || ""}</h3>
+              ${rawRomaji ? `<div class="banner-v9-romaji">${rawRomaji}</div>` : ""}
+              <div class="banner-v9-sub">${mat.sub || activeUnit.sub || activeUnit.desc || ""}</div>
             </div>
 
-            <div class="board-jp-block">
-              <div class="board-jp-kana">${rawKana || ""}</div>
-              ${rawRomaji ? `<div class="board-jp-romaji">${rawRomaji}</div>` : ""}
-              <div class="board-jp-sub">${mat.sub || activeUnit.sub || activeUnit.desc || ""}</div>
-            </div>
-
-            <div class="board-grammar-chips">
+            <div class="banner-v9-topics-grid">
               ${(mat.topics || [])
                 .slice(0, 4)
                 .map(
                   (topic, idx) => `
-                <button type="button" class="board-grammar-chip" data-act="topic-modal" data-bab="${activeBabKey}" data-topic="${idx}" title="Pelajari materi ${topic.text}">
+                <button type="button" class="banner-v9-topic-chip" data-act="topic-modal" data-bab="${activeBabKey}" data-topic="${idx}" title="Pelajari materi ${topic.text}">
                   ${topic.text}
                 </button>
               `
                 )
                 .join("")}
             </div>
+          </div>
+
+          <div class="banner-v9-tab-overlay">
+            ${babMeta
+              .map((b, idx) => {
+                const bNum = idx + 1;
+                const isActive = b.key === activeBabKey;
+                return `<button type="button" class="banner-v9-tab-hit ${isActive ? 'active' : ''}" data-act="select-bab" data-bab="${b.key}" aria-label="${b.label}" title="Lihat ${b.label}"></button>`;
+              })
+              .join("")}
           </div>
         </div>
       </div>
@@ -1534,7 +2816,8 @@
 
     const sid = S.activeStageId || "s1";
     let activeBabKey = "b1";
-    if (sid.startsWith("s5")) activeBabKey = "b5";
+    if (sid.startsWith("s6") || sid === "b6") activeBabKey = "b6";
+    else if (sid.startsWith("s5")) activeBabKey = "b5";
     else if (sid.startsWith("s4")) activeBabKey = "b4";
     else if (sid.startsWith("s3")) activeBabKey = "b3";
     else if (sid.startsWith("s2")) activeBabKey = "b2";
@@ -1547,21 +2830,47 @@
       { key: "b3", label: "Bab 3", color: "#14C3A2", text: "#fff" },
       { key: "b4", label: "Bab 4", color: "#FF8A3D", text: "#fff" },
       { key: "b5", label: "Bab 5", color: "#5B8CFF", text: "#fff" },
+      { key: "b6", label: "Bab 6", color: "#14C3A2", text: "#fff" },
     ];
+
+    const activePlayable =
+      stages.find((n) => n.state === "current") ||
+      stages.find((n) => n.id === S.activeStageId) ||
+      stages[stages.length - 1];
+    const allDone = stages.every((n) => n.state === "done");
+    const activeBabNum = activeBabKey.replace("b", "");
+    const ctaHtml = activePlayable
+      ? `<div class="map-cta-bar">
+          <button type="button" class="btn-map-cta" data-act="continue-stage" data-id="${activePlayable.id}">
+            ${icon(allDone ? "trophy" : "sparkle")}
+            <span>${allDone ? `Latih Ulang ${activePlayable.label}` : `Lanjut ${activePlayable.label}: ${activePlayable.title}`}</span>
+          </button>
+          <button type="button" class="btn-map-cta btn-map-cta--sec" data-act="jump-bab" data-bab="${activeBabKey}">
+            ${icon("map")}
+            <span>Lihat Pulau Bab ${activeBabNum}</span>
+          </button>
+        </div>`
+      : "";
 
     root.innerHTML = `
       <header class="topbar">
         <div class="brand">${icon("torii")}<span>${cfg.brand}</span></div>
-        <div class="top-actions">${soundBtn()}${romajiToggle()}</div>
+        <div class="top-actions">${renderTopDock()}</div>
       </header>
       <main class="map">
-        ${renderGenshinBanner(activeUnit, activeBabKey, babMeta, stages.length, done)}
-        ${renderStatsSection(D1.stats.streak + 1, S.xpTotal, stars, stages.length, done)}
+        <div class="map-top-content">
+          ${renderGenshinBanner(activeUnit, activeBabKey, babMeta, stages.length, done)}
+          ${ctaHtml}
+          ${renderStatsSection(getStreakStats(), S.xpTotal, stars, stages.length, done)}
+        </div>
         <section class="world">
-          <p class="world-title">${icon("map")}<span>Kepulauan Nihongo Quest</span></p>
-          ${worldSVG()}
+          <div class="world-inner">
+            <p class="world-title">${icon("map")}<span>Kepulauan Nihongo Quest</span></p>
+            ${worldSVG()}
+          </div>
         </section>
       </main>`;
+    requestAnimationFrame(() => updateDockNotch(false));
     if (S.fresh) unlockSequence(S.fresh);
     else if (!S.greeted) {
       S.greeted = true;
@@ -1653,6 +2962,7 @@
   function startLesson(stageId) {
     S.activeStageId = stageId || S.activeStageId || "s1";
     const stageData = ALL_STAGES[S.activeStageId] || (D1.stages && D1.stages[S.activeStageId]) || D1.stage;
+    const existingNode = S.nodes.find((n) => n.id === S.activeStageId);
     PHASES = stageData.phases;
     S.steps = [];
     PHASES.forEach((p, pi) => {
@@ -1661,7 +2971,15 @@
     });
     S.steps.push({ type: "result", phase: PHASES.length });
     S.fills = PHASES.map(() => 0);
-    Object.assign(S, { combo: 0, best: 0, gain: 0, banked: false });
+    Object.assign(S, {
+      combo: 0,
+      best: 0,
+      gain: 0,
+      bankedGain: 0,
+      preBossGain: null,
+      wasAlreadyDone: !!(existingNode && existingNode.state === "done"),
+      banked: false,
+    });
     S.screen = "lesson";
   }
   const cur = () => S.steps[S.i];
@@ -1670,7 +2988,11 @@
   function go(i) {
     S.i = i;
     const st = cur();
-    if (st.type === "intro" && inBoss(st)) Object.assign(S, { hp: 3, mistakes: 0, fast: 0, total: 0, correct: 0 });
+    if (st.type === "intro" && inBoss(st)) {
+      if (S.preBossGain === null) S.preBossGain = S.gain;
+      else S.gain = S.preBossGain;
+      Object.assign(S, { hp: 3, mistakes: 0, fast: 0, total: 0, correct: 0, banked: false });
+    }
     renderLesson();
   }
   function next() {
@@ -1799,8 +3121,12 @@
     },
 
     concept(st) {
+      const pointsHTML =
+        Array.isArray(st.points) && st.points.length
+          ? `<ul class="concept-points">${st.points.map((x) => `<li>${icon("check")}<span>${rich(x)}</span></li>`).join("")}</ul>`
+          : "";
       return {
-        body: `${phaseTag(st)}<h2 class="step-title">${st.title}</h2><div class="card concept">${st.body ? `<p class="concept-text">${rich(st.body)}</p>` : ""}${
+        body: `${phaseTag(st)}<h2 class="step-title">${st.title}</h2><div class="card concept">${st.body ? `<p class="concept-text">${rich(st.body)}</p>` : ""}${pointsHTML}${
           st.formula ? formulaHTML(st.formula) : ""
         }${(st.examples || []).map(exampleHTML).join("")}${st.tip ? `<div class="tip">${icon("bulb")}<p>${rich(st.tip)}</p></div>` : ""}</div>`,
         foot: nextBtn(),
@@ -1902,11 +3228,16 @@
     },
 
     result() {
+      const earnedNow = S.wasAlreadyDone ? 0 : Math.max(0, S.gain - S.bankedGain);
       if (!S.banked) {
         S.banked = true;
-        S.xpTotal += S.gain;
+        if (earnedNow > 0) {
+          S.bankedGain += earnedNow;
+          S.xpTotal += earnedNow;
+        }
       }
       if (S.hp <= 0) {
+        if (!S.demoMode && earnedNow > 0) saveProgress();
         return {
           body: `<div class="result result--fail"><div class="result-badge">${icon("heart")}</div><p class="intro-kicker">HP habis</p><h2 class="step-title">Hampir! Coba sekali lagi?</h2><p class="intro-desc">Kamu menjawab benar ${S.correct} dari ${S.total} soal Boss. XP yang sudah kamu kumpulkan tetap aman.</p></div>`,
           foot: btn(`${icon("book")}<span>Ulang materi</span>`, "restart", "btn-ghost") + btn(`${icon("refresh")}<span>Ulang Boss</span>`, "retry"),
@@ -1918,8 +3249,13 @@
       const currNode = S.nodes.find((n) => n.id === curId);
       const idx = S.nodes.findIndex((n) => n.id === curId);
       const nextNode = idx !== -1 && idx + 1 < S.nodes.length ? S.nodes[idx + 1] : null;
+      const shownGain = S.wasAlreadyDone ? 0 : S.gain;
 
       unlockNext(stars);
+      if (!S.demoMode) {
+        recordStudyToday();
+        saveProgress();
+      }
 
       let unlockMsg = "";
       if (nextNode) {
@@ -1943,17 +3279,17 @@
       return {
         body: `<div class="result result--pass"><div class="result-badge">${icon("trophy")}</div><p class="intro-kicker">${currNode ? currNode.label : "Stage"} selesai</p><h2 class="step-title">Boss dikalahkan!</h2><div class="stars" role="img" aria-label="${stars} dari 3 bintang">${[0, 1, 2]
           .map((i) => `<svg class="ico star${i < stars ? " is-on" : ""}" style="animation-delay:${0.35 + i * 0.38}s" viewBox="0 0 24 24" aria-hidden="true">${ICONS.star}</svg>`)
-          .join("")}</div><p class="xp-gain" aria-label="${S.gain} XP didapat">+<span class="xp-num">0</span> XP</p><div class="result-stats">${rstat(
+          .join("")}</div><p class="xp-gain" aria-label="${shownGain} XP didapat">+<span class="xp-num">0</span> XP</p><div class="result-stats">${rstat(
           `${S.correct}/${S.total}`,
           "Jawaban Boss benar"
         )}${rstat("×" + S.best, "Combo terbaik")}${rstat(S.fast, "Bonus kilat")}</div><p class="unlock-note">${icon("sparkle")}<span>${unlockMsg}</span></p></div>`,
         foot: btn(`${icon("map")}<span>${nextNode ? "Buka pulau baru" : "Kembali ke peta"}</span>`, "map"),
-        bind: () => celebrate(stars),
+        bind: () => celebrate(stars, shownGain),
       };
     },
   };
 
-  function celebrate(stars) {
+  function celebrate(stars, xpGainToCount = S.gain) {
     Buddy.react("party", LINES.pass);
     FX.rain();
     SFX.unlock();
@@ -1963,7 +3299,7 @@
         FX.at(s, { n: 16, power: 6 });
       }, 350 + i * 380)
     );
-    setTimeout(() => countUp(root.querySelector(".xp-num"), S.gain, 900), 350 + stars * 380);
+    setTimeout(() => countUp(root.querySelector(".xp-num"), xpGainToCount, 900), 350 + stars * 380);
   }
 
   function countUp(el, to, ms) {
@@ -1993,6 +3329,10 @@
       if (next.state === "locked") {
         S.fresh = next.id;
         next.state = "current";
+        if (next.stage) {
+          S.activeStageId = next.id;
+          S.selectedBabKey = null;
+        }
       }
     }
   }
@@ -2231,7 +3571,12 @@
     "topic-modal-close"() {
       closeTopicModal();
     },
+    "modal-close"() {
+      closeTopicModal();
+      closeLoginModal();
+    },
     "select-bab"(el) {
+      if (S.fresh) return;
       const key = el.dataset.bab;
       if (key && BAB_MATERIALS[key]) {
         S.selectedBabKey = key;
@@ -2239,11 +3584,90 @@
         renderMap();
       }
     },
+    "continue-stage"(el) {
+      if (S.fresh) return;
+      const id = el.dataset.id;
+      if (id) onNode(id);
+    },
+    "jump-bab"(el) {
+      const anchorByBab = { b1: "s1", b2: "s2_1", b3: "s3_1", b4: "s4_1", b5: "s5_1", b6: "b6" };
+      const targetId = anchorByBab[el.dataset.bab] || "s1";
+      const isle = root.querySelector(`.isle[data-id="${targetId}"]`);
+      if (isle) {
+        SFX.tap();
+        const r = isle.getBoundingClientRect();
+        window.scrollTo({
+          top: Math.max(0, window.scrollY + r.top - window.innerHeight * 0.42),
+          behavior: reduceMotion ? "auto" : "smooth",
+        });
+        Buddy.say(`Ini pulau ${el.dataset.bab.toUpperCase().replace("B", "Bab ")}! Ketuk pulaunya untuk mulai! 🏝️`);
+      }
+    },
+    "mascot-cheer"() {
+      SFX.tap();
+      const cheers = [
+        "Semangat ya! Kamu pasti bisa taklukkan pulau ini! :3",
+        "Setiap materi membawamu selangkah lebih dekat ke puncak kejayaan!",
+        "Keren banget progres belajarmu hari ini! Ganbatte! ✨",
+        "Tantang pulau dan kumpulkan bintang sebanyak-banyaknya! :3"
+      ];
+      Buddy.say(pick(cheers), 3200);
+    },
+    "dock-tab"(el) {
+      const tab = el.dataset.tab;
+      S.activeDockTab = tab;
+
+      const dock = root.querySelector(".top-dock");
+      if (dock) {
+        dock.querySelectorAll(".dock-btn").forEach((btn) => {
+          btn.classList.toggle("is-active", btn.dataset.tab === tab);
+        });
+        updateDockNotch(true);
+      }
+
+      if (tab === "avatar") {
+        const loginModal = document.getElementById("login-modal-root");
+        if (loginModal) {
+          closeLoginModal();
+          return;
+        }
+        if (S.user) {
+          openAccountModal();
+        } else {
+          openLoginModal();
+        }
+      } else if (tab === "sound") {
+        const on = SFX.toggle();
+        el.setAttribute("aria-pressed", on);
+        const iconStatus = el.querySelector(".sound-icon-status");
+        if (iconStatus) {
+          iconStatus.innerHTML = on ? `
+            <path d="M4195 1675 C4220 1695 4220 1725 4195 1745" stroke="#1D1B3A" stroke-width="26" stroke-linecap="round"/>
+            <path d="M4240 1650 C4280 1685 4280 1735 4240 1770" stroke="#1D1B3A" stroke-width="26" stroke-linecap="round"/>
+          ` : `
+            <path d="M4280.26 1748.93L4200.58 1669.25M4280.26 1669.25L4200.58 1748.93" stroke-width="26" stroke-linecap="round" stroke="#1D1B3A"/>
+          `;
+        }
+        if (on) SFX.select();
+        else hush();
+        toast(on ? "Suara & efek nyala 🔊" : "Suara & efek dibisukan 🔇");
+      } else if (tab === "romaji") {
+        S.romaji = !S.romaji;
+        store.set("nq-romaji", S.romaji ? "1" : "0");
+        root.classList.toggle("romaji-off", !S.romaji);
+        el.setAttribute("aria-pressed", S.romaji);
+        root.querySelectorAll(".toggle").forEach((t) => t.setAttribute("aria-pressed", S.romaji));
+        SFX.tap();
+        toast(S.romaji ? "Bantuan Romaji aktif (ada cara baca alfabet)" : "Romaji dinonaktifkan (latihan huruf Jepang murni)");
+      }
+    },
     romaji() {
       S.romaji = !S.romaji;
       store.set("nq-romaji", S.romaji ? "1" : "0");
       root.classList.toggle("romaji-off", !S.romaji);
       root.querySelectorAll(".toggle").forEach((t) => t.setAttribute("aria-pressed", S.romaji));
+      const dockRomaji = root.querySelector('.dock-btn[data-tab="romaji"]');
+      if (dockRomaji) dockRomaji.setAttribute("aria-pressed", S.romaji);
       SFX.tap();
       toast(S.romaji ? "Bantuan Romaji aktif (ada cara baca alfabet)" : "Romaji dinonaktifkan (latihan huruf Jepang murni)");
     },
@@ -2255,6 +3679,15 @@
       toast(on ? "Efek suara nyala" : "Efek suara mati");
     },
     node: (el) => onNode(el.dataset.id),
+    "reader-node"(el) {
+      const bab = el.dataset.bab || "1";
+      const mode = el.dataset.mode || "materi";
+      SFX.select();
+      buzz(10);
+      FX.at(el, { n: 12, power: 4 });
+      Buddy.say(`Membuka Minna no Nihongo Bab ${bab} (${mode === "materi" ? "Materi Indo" : "Full Jepang"}) di tab baru! 📖`);
+      window.open(`reader.html?bab=${bab}&mode=${mode}`, "_blank");
+    },
     ship(el) {
       SFX.sail();
       buzz(12);
@@ -2334,13 +3767,17 @@
         Buddy.react("sad", "Hehe, kena jebakan! Sekarang kamu tahu.");
       }
     },
-    restart: () => go(0),
+    restart() {
+      Object.assign(S, { gain: 0, preBossGain: null, banked: false });
+      go(0);
+    },
     retry: () => go(S.steps.findIndex((s) => s.type === "intro" && inBoss(s))),
   };
 
   function onClick(e) {
     const el = e.target.closest("[data-act]");
     if (!el || el.disabled || !root.contains(el)) return;
-    ACT[el.dataset.act](el);
+    const fn = ACT[el.dataset.act];
+    if (typeof fn === "function") fn(el);
   }
 })();
