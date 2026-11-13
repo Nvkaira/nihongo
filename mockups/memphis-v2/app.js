@@ -743,6 +743,14 @@
     };
   }
 
+  function dismissToast() {
+    const t = document.querySelector(".toast");
+    if (t) {
+      t.classList.remove("is-on");
+      clearTimeout(toast.timer);
+    }
+  }
+
   function toast(msg) {
     let t = document.querySelector(".toast");
     if (!t) {
@@ -752,6 +760,8 @@
       document.body.appendChild(t);
     }
     t.textContent = msg;
+    t.classList.remove("is-on");
+    void t.offsetWidth;
     t.classList.add("is-on");
     clearTimeout(toast.timer);
     toast.timer = setTimeout(() => t.classList.remove("is-on"), 2800);
@@ -2125,6 +2135,7 @@
   }
 
   function openTopicModal(babKey, topicIdx) {
+    dismissToast();
     S.prevFocus = document.activeElement;
     const bab = BAB_MATERIALS[babKey];
     if (!bab || !bab.topics || !bab.topics[topicIdx]) return;
@@ -2259,6 +2270,7 @@
   }
 
   function openLoginModal() {
+    dismissToast();
     S.prevFocus = document.activeElement;
     closeTopicModal(true);
     closeLoginModal(true);
@@ -2592,6 +2604,7 @@
   }
 
   function openAccountModal() {
+    dismissToast();
     S.prevFocus = document.activeElement;
     closeTopicModal(true);
     closeLoginModal(true);
@@ -2757,6 +2770,7 @@
   }
 
   function renderMap() {
+    dismissToast();
     S.screen = "map";
     setRootClass();
     Buddy.where("map");
@@ -2910,6 +2924,7 @@
 
   // ---------- Alur pelajaran ----------
   function startLesson(stageId) {
+    dismissToast();
     S.activeStageId = stageId || S.activeStageId || "s1";
     const stageData = ALL_STAGES[S.activeStageId] || (D1.stages && D1.stages[S.activeStageId]) || D1.stage;
     const existingNode = S.nodes.find((n) => n.id === S.activeStageId);
@@ -2982,6 +2997,7 @@
   }
 
   function renderLesson() {
+    dismissToast();
     hush();
     setRootClass();
     Buddy.where("lesson");
@@ -3645,6 +3661,7 @@
       Buddy.react("happy", "Kapal pesiar lewat! Tuuuut~ 🚢");
     },
     map() {
+      dismissToast();
       hush();
       renderMap();
       if (!S.fresh) window.scrollTo(0, 0);

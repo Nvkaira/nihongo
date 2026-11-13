@@ -224,9 +224,16 @@ ruby rt { font-size: .5em; letter-spacing: 0; }
 /* Toast */
 .toast {
   position: fixed; left: 50%; bottom: 24px; z-index: 50; max-width: calc(100% - 32px); padding: 12px 18px;
-  transform: translate(-50%, 160%); transition: transform .3s ease; pointer-events: none; text-align: center;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transform: translate(-50%, 20px) scale(0.95);
+  transition: opacity .25s ease, transform .25s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0s linear .25s;
+  text-align: center;
 }
-.toast.is-on { transform: translate(-50%, 0); }
+.toast.is-on {
+  opacity: 1; visibility: visible; pointer-events: auto;
+  transform: translate(-50%, 0) scale(1);
+  transition: opacity .25s ease, transform .25s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0s linear 0s;
+}
 
 /* Dekorasi latar */
 .decor { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
