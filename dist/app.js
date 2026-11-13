@@ -6,6 +6,7 @@
 (function () {
   "use strict";
 
+  const D0 = window.BAB0 || { nodes: [], stages: {}, unit: { label: "Bab 0", title: "かな|kana", sub: "Perkenalan Huruf Hiragana & Katakana" } };
   const D1 = window.BAB1 || { nodes: [], stages: {}, unit: { label: "Bab 1", title: "はじめまして!|hajimemashite!", sub: "Kenalan & memperkenalkan diri" } };
   const D2 = window.BAB2 || { nodes: [], stages: {}, unit: { label: "Bab 2", title: "これ・それ・あれ|kore, sore, are", sub: "Benda di sekitarku & kepemilikan" } };
   const D3 = window.BAB3 || { nodes: [], stages: {}, unit: { label: "Bab 3", title: "ここ・そこ・あそこ|koko, soko, asoko", sub: "Tempat, arah, lantai & belanja" } };
@@ -14,6 +15,7 @@
   const D6 = window.BAB6 || { nodes: [], stages: {}, unit: { label: "Bab 6", title: "何を 食べますか|nani o tabemasu ka", sub: "Makanan, kegiatan & ajakan bersama" } };
 
   const ALL_UNITS = {
+    b0: D0.unit,
     b1: D1.unit,
     b2: D2.unit,
     b3: D3.unit,
@@ -23,6 +25,57 @@
   };
 
   const BAB_MATERIALS = {
+    b0: {
+      num: "0",
+      title: "かな|kana",
+      sub: "Perkenalan Huruf Hiragana & Katakana",
+      color: "#9C7CFF",
+      headerBg: "#F0EBFF",
+      topics: [
+        {
+          tag: "Huruf Asli",
+          text: "Hiragana (ひらがな)",
+          romaji: "Hiragana",
+          meaning: "Huruf Dasar Asli Jepang",
+          desc: "Huruf berkarakter melengkung dan halus. Digunakan untuk menulis kata-kata asli bahasa Jepang, partikel kalimat, dan akhiran kata kerja/sifat.",
+          example: {
+            jp: "あ・い・う・え・お",
+            romaji: "a - i - u - e - o",
+            id: "5 Vokal Dasar Hiragana (a, i, u, e, o)",
+            tokens: ["あ|a", "い|i", "う|u", "え|e", "お|o"],
+          },
+          tip: "Semua bunyi bahasa Jepang selalu berakar dari 5 vokal dasar ini!",
+        },
+        {
+          tag: "Kata Serapan",
+          text: "Katakana (カタカナ)",
+          romaji: "Katakana",
+          meaning: "Huruf Kata Serapan Asing",
+          desc: "Huruf bersudut kaku dan tegas. Khusus digunakan untuk menulis kosakata serapan dari bahasa asing (Inggris, Belanda, dll), nama orang luar negeri, dan efek bunyi (onomatopoeia).",
+          example: {
+            jp: "ア・イ・ウ・エ・オ",
+            romaji: "a - i - u - e - o",
+            id: "5 Vokal Dasar Katakana (a, i, u, e, o)",
+            tokens: ["ア|a", "イ|i", "ウ|u", "エ|e", "オ|o"],
+          },
+          tip: "Perhatikan bentuknya yang bersudut tajam dan garisnya lebih lurus!",
+        },
+        {
+          tag: "Strategi Belajar",
+          text: "Mulai dari Vokal",
+          romaji: "a - i - u - e - o",
+          meaning: "Fondasi Utama",
+          desc: "Urutan vokal Jepang adalah A, I, U, E, O. Kuasai bentuk vokal ini, maka baris huruf selanjutnya (Ka, Sa, Ta, Na, dst) akan jauh lebih mudah dipelajari!",
+          example: {
+            jp: "あさ (pagi) ・ アイス (es krim)",
+            romaji: "asa (pagi) - aisu (es krim)",
+            id: "Contoh kata nyata dari huruf Hiragana dan Katakana",
+            tokens: ["あさ|asa", "アイス|aisu"],
+          },
+          tip: "Latih kemampuanmu di pulau ini dengan mengetuk tombol dengar untuk menyimak lafal aslinya!",
+        },
+      ],
+    },
     b1: {
       num: "1",
       title: "はじめまして!|hajimemashite!",
@@ -416,6 +469,7 @@
   };
 
   const ALL_STAGES = {
+    ...(D0.stages || {}),
     ...(D1.stages || { s1: D1.stage }),
     ...(D2.stages || {}),
     ...(D3.stages || {}),
@@ -604,6 +658,24 @@
   }
 
   const AUDIO_MAP = {
+    "あ": "audio/b0_a.mp3",
+    "い": "audio/b0_i.mp3",
+    "う": "audio/b0_u.mp3",
+    "え": "audio/b0_e.mp3",
+    "お": "audio/b0_o.mp3",
+    "ア": "audio/b0_a.mp3",
+    "イ": "audio/b0_i.mp3",
+    "ウ": "audio/b0_u.mp3",
+    "エ": "audio/b0_e.mp3",
+    "オ": "audio/b0_o.mp3",
+    "あさ": "audio/b0_asa.mp3",
+    "いぬ": "audio/b0_inu.mp3",
+    "うみ": "audio/b0_umi.mp3",
+    "えき": "audio/b0_eki.mp3",
+    "おちゃ": "audio/b0_ocha.mp3",
+    "アイス": "audio/b0_aisu.mp3",
+    "アニメ": "audio/b0_anime.mp3",
+    "オレンジ": "audio/b0_orenji.mp3",
     "わたしわがくせいです": "audio/b1_0.mp3",
     "わたしわせんせいじゃありません": "audio/b1_1.mp3",
     "たなかさんわかいしゃいんですか": "audio/b1_2.mp3",
@@ -1092,7 +1164,7 @@
 
   // ---------- State ----------
   const ALL_NODES = [
-    { id: "b0", label: "Bab 0", title: "Kenalan Hiragana", sub: "あ・い・う・え・お", state: "done" },
+    { id: "b0", label: "Bab 0", title: "Perkenalan Kana", sub: "Hiragana & Katakana", state: "done", stage: true, playable: true },
     { id: "s1", label: "Stage 1-1", title: "Aku adalah…", sub: "は・です・じゃありません", state: "done", stage: true, playable: true },
     { id: "s2", label: "Stage 1-2", title: "Bertanya & “juga”", sub: "か・も", state: "done", stage: true, playable: true },
     { id: "s3", label: "Stage 1-3", title: "Perkenalan diri", sub: "の・さん", state: "done", stage: true, playable: true },
