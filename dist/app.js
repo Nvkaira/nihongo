@@ -1874,25 +1874,37 @@
     const isChart = b.mode === "chart";
     const readKey = isChart ? "b0_chart" : `b${b.bab}_${b.mode}`;
     const isRead = !!(S.readBooks && S.readBooks[readKey]);
-    const badgeText = isChart ? "BAGAN" : b.mode === "materi" ? "MATERI" : "JEPANG";
-    const badgeFill = isChart ? "#9C7CFF" : b.mode === "materi" ? "#FFC63D" : "#FF5C8A";
-    const badgeColor = isChart ? "#fff" : b.mode === "materi" ? "#1D1B3A" : "#fff";
+    const parentNode = S.nodes.find((n) => n.id === b.parent);
+    const isLocked = !parentNode || parentNode.state === "locked";
+    const status = isLocked ? "terkunci" : isRead ? "sudah dibaca" : "tersedia";
+    const badgeText = isLocked ? "TERKUNCI 🔒" : isChart ? "BAGAN" : b.mode === "materi" ? "MATERI" : "JEPANG";
+    const badgeFill = isLocked ? "#7E7B92" : isChart ? "#9C7CFF" : b.mode === "materi" ? "#FFC63D" : "#FF5C8A";
+    const badgeColor = isLocked ? "#fff" : isChart ? "#fff" : b.mode === "materi" ? "#1D1B3A" : "#fff";
     return `<g transform="translate(${b.x} ${b.y}) scale(0.72)">
-      <g class="isle isle--reader${isRead ? " is-read" : ""}" data-act="${isChart ? "kana-chart-node" : "reader-node"}" data-bab="${b.bab}" data-mode="${b.mode}" role="button" tabindex="0" aria-label="Buka ${b.title} Bab ${b.bab}">
+      <g class="isle isle--reader${isLocked ? " isle--locked" : ""}${isRead ? " is-read" : ""}" data-act="${isChart ? "kana-chart-node" : "reader-node"}" data-bab="${b.bab}" data-mode="${b.mode}" role="button" tabindex="0"${isLocked ? ' aria-disabled="true"' : ""} aria-label="${b.title} Bab ${b.bab}, ${status}">
         <g class="isle-inner">
           <ellipse class="isle-water" cx="0" cy="26" rx="86" ry="23"/>
           <path class="isle-sand" d="${SAND}"/>
-          <path class="isle-grass" d="${GRASS}" fill="${b.grass}"/>
+          <path class="isle-grass" d="${GRASS}" fill="${isLocked ? "#A8A3BA" : b.grass}"/>
           <g class="isle-prop">${PROPS[b.prop]}</g>
           ${isRead ? `<g transform="translate(52 -24)"><circle r="15" fill="#14C3A2" stroke="#1D1B3A" stroke-width="2.5"/><path d="M-6 0l4 4 8-9" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></g>` : ""}
           <g class="isle-sign" transform="translate(0 68)">
             <rect x="-86" y="-22" width="172" height="50" rx="16"/>
             <text class="isle-code" y="-4">${b.code}</text>
-            <text class="isle-title" y="17">${b.title}</text>
+            <text class="isle-title" y="17">${isLocked ? "Terkunci 🔒" : b.title}</text>
           </g>
+          ${
+            isLocked
+              ? `<g class="isle-fog">
+              <g transform="translate(-28 -10) scale(.85)"><g class="cloud c1"><path d="${CLOUD}"/></g></g>
+              <g transform="translate(30 2) scale(.75)"><g class="cloud c2"><path d="${CLOUD}"/></g></g>
+              <g transform="translate(0 -6)"><g class="isle-lock"><circle r="19"/><g transform="translate(-12 -12)">${ICONS.lock}</g></g></g>
+            </g>`
+              : ""
+          }
         </g>
         <g class="isle-tab-badge" transform="translate(0 -66)">
-          <rect x="-38" y="-12" width="76" height="22" rx="11" fill="${badgeFill}" stroke="#1D1B3A" stroke-width="2.5"/>
+          <rect x="-44" y="-12" width="88" height="22" rx="11" fill="${badgeFill}" stroke="#1D1B3A" stroke-width="2.5"/>
           <text y="3" font-family="'Fredoka', sans-serif" font-weight="700" font-size="10.5" fill="${badgeColor}" text-anchor="middle">${badgeText}</text>
         </g>
       </g>
@@ -1961,7 +1973,9 @@
     }
     const branchRoutes = BRANCH_NODES.map((b) => {
       const p = ISLES[b.parent];
-      return `<path class="route--branch" d="${branchRouteD(p, b)}"/>`;
+      const parentNode = S.nodes.find((n) => n.id === b.parent);
+      const isLocked = !parentNode || parentNode.state === "locked";
+      return `<path class="route--branch${isLocked ? " route--locked" : ""}" d="${branchRouteD(p, b)}"/>`;
     }).join("");
 
     return `<svg class="world-svg" viewBox="-122 0 644 ${WORLD_H}" role="group" aria-label="Peta pulau Nihongo Quest">
@@ -3783,6 +3797,20 @@
     "reader-node"(el) {
       const bab = el.dataset.bab || "1";
       const mode = el.dataset.mode || "materi";
+      const b = BRANCH_NODES.find((bn) => String(bn.bab) === String(bab) && bn.mode === mode);
+      const parentNode = b ? S.nodes.find((n) => n.id === b.parent) : null;
+      const isLocked = !parentNode || parentNode.state === "locked";
+
+      if (isLocked) {
+        el.classList.remove("is-shaking");
+        void el.getBoundingClientRect();
+        el.classList.add("is-shaking");
+        SFX.rattle();
+        buzz(20);
+        const stageLabel = parentNode ? parentNode.label : `Bab ${bab}`;
+        return toast(`Buku ${mode === "materi" ? "Materi Indo" : "Full Jepang"} Bab ${bab} masih terkunci! Capai awal Bab ${bab} (${stageLabel}) dulu ya. 🔒`);
+      }
+
       SFX.select();
       buzz(10);
       FX.at(el, { n: 12, power: 4 });

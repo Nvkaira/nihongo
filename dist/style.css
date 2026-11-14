@@ -1095,6 +1095,7 @@ body:has(.app--lesson) .decor { opacity: .25; }
   stroke-dasharray: 2 12;
   opacity: .78;
 }
+.route--branch.route--locked { opacity: .22; }
 .boat { transition: opacity .4s; }
 .boat.is-docked { opacity: 0; }
 
@@ -1104,6 +1105,8 @@ body:has(.app--lesson) .decor { opacity: .25; }
 .isle:hover .isle-inner, .isle:focus-visible .isle-inner { transform: scale(1.05); }
 .isle:active .isle-inner { transform: scale(.96); }
 .isle--reader:hover .isle-inner { transform: scale(1.09) translateY(-4px); }
+.isle--locked:hover .isle-inner,
+.isle--locked:hover .isle-tab-badge { transform: none !important; }
 .isle--reader .isle-sign rect { fill: #FFFDF7; stroke-width: 3; }
 .isle--reader[data-mode="materi"] .isle-sign rect { fill: #FFF7D6; }
 .isle--reader[data-mode="jep"] .isle-sign rect { fill: #FFE8EF; }
