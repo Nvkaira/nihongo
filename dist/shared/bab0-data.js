@@ -29,7 +29,7 @@ const STAGE_0 = {
             "Contoh Katakana: [[テレビ|terebi]] (Televisi)",
             "Contoh Kanji: [[日本|にほん]] (Jepang)"
           ],
-          tip: "Sebagai pemula, fokuslah menguasai Hiragana dan Katakana terlebih dahulu!"
+          tip: "Sebagai pemula, fokuslah menguasai Hiragana dan Katakana! Kamu juga bisa membuka Bagan Lengkap Kana (Cheat Sheet) kapan saja."
         },
         {
           type: "flip",

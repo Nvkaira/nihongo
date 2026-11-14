@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bagan Lengkap Huruf Kana - Nihongo Quest (Bab 0)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #FFF9F2;
+    --brown-leather: #AD7258;
+    --brown-text: #4A2E1E;
+    --brown-sub: #8C5332;
+    --cream-card: #FBEFD9;
+    --cream-card-edge: #C28767;
+    --accent-orange: #FF9B42;
+    --accent-yellow: #F7D070;
+    --accent-purple: #9C7CFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg-page);
+    font-family: 'Fredoka', 'Zen Maru Gothic', sans-serif;
+    color: var(--brown-text);
+    padding: 24px 16px 80px;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  /* Top Navigation Bar */
+  .top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #FFFFFF;
+    color: var(--brown-text);
+    border: 3px solid #EEDBCE;
+    padding: 10px 20px;
+    border-radius: 99px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #EEDBCE;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .back-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #D9B38C;
+  }
+  .back-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #D9B38C;
+  }
+
+  .nav-stats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #FFF0DF;
+    border: 2px dashed #E0C7A8;
+    padding: 6px 16px;
+    border-radius: 99px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--brown-sub);
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .header-badge {
+    display: inline-block;
+    background: #EEDBC5;
+    color: var(--brown-sub);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 5px 16px;
+    border-radius: 99px;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--brown-text);
+    margin-bottom: 6px;
+  }
+  .header p {
+    font-size: 15px;
+    color: var(--brown-sub);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Controls: Toggle Hiragana/Katakana + Filter */
+  .controls-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .toggle-group {
+    background: #EEDBC5;
+    padding: 4px;
+    border-radius: 20px;
+    display: flex;
+    gap: 4px;
+  }
+  .toggle-btn {
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 8px 22px;
+    border-radius: 16px;
+    cursor: pointer;
+    color: var(--brown-sub);
+    transition: all 0.2s ease;
+  }
+  .toggle-btn.active {
+    background: #FFFFFF;
+    color: var(--brown-text);
+    box-shadow: 0 3px 8px rgba(74, 46, 30, 0.12);
+  }
+
+  .quick-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .filter-pill {
+    background: #FFFFFF;
+    border: 2px solid #EEDBCE;
+    color: var(--brown-sub);
+    padding: 6px 14px;
+    border-radius: 99px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .filter-pill.active, .filter-pill:hover {
+    background: #FF9B42;
+    border-color: #FF9B42;
+    color: #FFFFFF;
+  }
+
+  /* Section styling */
+  .chart-section {
+    background: #FFFFFF;
+    border: 3px solid #EEDBCE;
+    border-radius: 24px;
+    padding: 24px 20px;
+    margin-bottom: 28px;
+    box-shadow: 0 8px 20px rgba(173, 114, 88, 0.08);
+  }
+  .section-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--brown-text);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .section-tag {
+    font-size: 12px;
+    background: #FDF1DC;
+    color: #B36829;
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+  }
+
+  /* Kana Grid System */
+  .grid-wrap {
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .kana-grid {
+    display: grid;
+    gap: 12px;
+    justify-content: center;
+    min-width: max-content;
+    margin: 0 auto;
+  }
+  .grid-gojuon {
+    grid-template-columns: repeat(11, 88px);
+  }
+  .grid-dakuon {
+    grid-template-columns: repeat(5, 88px);
+  }
+  .grid-yoon {
+    grid-template-columns: repeat(3, 94px);
+  }
+
+  /* Two Column Layout for Bottom Section (Dakuon & Yoon) */
+  .bottom-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 960px) {
+    .bottom-split {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Card Item with User Frame */
+  .kana-card {
+    position: relative;
+    width: 88px;
+    height: 90px;
+    background-image: url('card_template.png');
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s ease;
+  }
+  .grid-yoon .kana-card {
+    width: 94px;
+  }
+  .kana-card:hover {
+    transform: translateY(-4px) scale(1.05);
+    filter: drop-shadow(0 6px 12px rgba(173, 114, 88, 0.25));
+  }
+  .kana-card:active {
+    transform: translateY(1px) scale(0.98);
+  }
+  .kana-card.empty {
+    background: transparent;
+    cursor: default;
+    border: 2px dashed #EEDBC5;
+    border-radius: 12px;
+    height: 90px;
+    opacity: 0.3;
+  }
+  .kana-card.empty:hover {
+    transform: none;
+    filter: none;
+  }
+
+  /* Kana Character Typography - Tanpa Kotak */
+  .kana-char {
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 38px;
+    font-weight: 900;
+    color: var(--brown-text);
+    line-height: 1;
+    margin-top: 2px;
+    text-shadow: 1px 1px 0 rgba(194, 135, 103, 0.2);
+  }
+  .grid-yoon .kana-char {
+    font-size: 30px;
+    letter-spacing: -1px;
+  }
+  .kana-romaji {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--brown-sub);
+    letter-spacing: 0.5px;
+    margin-top: 3px;
+  }
+
+  /* Playing audio pulse animation */
+  .kana-card.is-playing {
+    animation: cardPulse 0.4s ease;
+  }
+  @keyframes cardPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.14); filter: drop-shadow(0 0 16px rgba(247, 208, 112, 0.9)); }
+    100% { transform: scale(1); }
+  }
+
+  /* Detail Modal / Big Card Preview */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 20, 15, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .modal-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .modal-card-box {
+    position: relative;
+    width: 360px;
+    max-width: 90vw;
+    height: 360px;
+    background-image: url('card_template.png');
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transform: scale(0.85);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .modal-backdrop.is-open .modal-card-box {
+    transform: scale(1);
+  }
+  .modal-char {
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 160px;
+    font-weight: 900;
+    color: var(--brown-text);
+    line-height: 0.95;
+    text-shadow: 2px 4px 0 rgba(194, 135, 103, 0.3);
+  }
+  .modal-romaji {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    color: var(--brown-sub);
+    margin-top: 10px;
+  }
+  .modal-close-btn {
+    position: absolute;
+    top: -16px;
+    right: -16px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #FF5C8A;
+    border: 3px solid #1D1B3A;
+    color: #fff;
+    font-weight: 900;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #1D1B3A;
+  }
+  .modal-audio-btn {
+    margin-top: 12px;
+    background: #FFC63D;
+    border: 2px solid var(--brown-text);
+    color: var(--brown-text);
+    padding: 6px 18px;
+    border-radius: 99px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Nav Bar -->
+  <nav class="top-nav">
+    <a href="index.html" class="back-btn" id="btn-back" onclick="if (window.opener) { window.close(); return false; }">
+      <span>← Kembali ke Peta</span>
+    </a>
+    <div class="nav-stats">
+      <span>🏝️ Bab 0: Perkenalan Kana</span>
+      <span>•</span>
+      <span>104 Karakter</span>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-badge">BAGAN LENGKAP KANA • BAB 0</div>
+    <h1>Bagan Lengkap Huruf Kana</h1>
+    <p>Disusun rapi dengan media kartu jahitan asli • Ketuk kartu mana saja untuk mendengar bunyi lafal aslinya!</p>
+  </header>
+
+  <!-- Controls: Toggle Hiragana / Katakana + Filter -->
+  <div class="controls-bar">
+    <div class="toggle-group">
+      <button class="toggle-btn active" id="btn-hiragana" onclick="setKanaType('hiragana')">Hiragana (ひらがな)</button>
+      <button class="toggle-btn" id="btn-katakana" onclick="setKanaType('katakana')">Katakana (カタカナ)</button>
+    </div>
+
+    <div class="quick-filters">
+      <button class="filter-pill active" onclick="scrollToSection('sec-gojuon')">1. Huruf Dasar (46)</button>
+      <button class="filter-pill" onclick="scrollToSection('sec-dakuon')">2. Dakuon (25)</button>
+      <button class="filter-pill" onclick="scrollToSection('sec-yoon')">3. Yōon (33)</button>
+    </div>
+  </div>
+
+  <!-- BAGIAN 1: 46 Huruf Dasar (Gojuuon) -->
+  <section class="chart-section" id="sec-gojuon">
+    <div class="section-title">
+      <span>1. Huruf Dasar (Gojūon)</span>
+      <span class="section-tag">46 Huruf</span>
+    </div>
+    <div class="grid-wrap">
+      <div class="kana-grid grid-gojuon" id="grid-gojuon"></div>
+    </div>
+  </section>
+
+  <!-- BAGIAN 2 & 3: Dakuon/Handakuon & Yoon -->
+  <div class="bottom-split">
+    <!-- Dakuon & Handakuon -->
+    <section class="chart-section" id="sec-dakuon">
+      <div class="section-title">
+        <span>2. Dakuon & Handakuon</span>
+        <span class="section-tag">25 Huruf</span>
+      </div>
+      <div class="grid-wrap">
+        <div class="kana-grid grid-dakuon" id="grid-dakuon"></div>
+      </div>
+    </section>
+
+    <!-- Yoon (Kombinasi) -->
+    <section class="chart-section" id="sec-yoon">
+      <div class="section-title">
+        <span>3. Yōon (Kombinasi)</span>
+        <span class="section-tag">33 Huruf</span>
+      </div>
+      <div class="grid-wrap">
+        <div class="kana-grid grid-yoon" id="grid-yoon"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Modal Detail Single Card -->
+<div class="modal-backdrop" id="cardModal" onclick="closeModal(event)">
+  <div class="modal-card-box" onclick="event.stopPropagation()">
+    <button class="modal-close-btn" onclick="closeModal()">×</button>
+    <div class="modal-char" id="modalChar">あ</div>
+    <div class="modal-romaji" id="modalRomaji">a</div>
+    <button class="modal-audio-btn" id="modalAudioBtn" onclick="replayModalAudio()">
+      <span>🔊 Putar Ulang Suara</span>
+    </button>
+  </div>
+</div>
+
+<script>
+// Data Gojuon (11 Kolom: Vokal, K, S, T, N, H, M, Y, R, W, N)
+const GOJUON_COLS = [
+  { name: 'Vokal', items: [['あ','ア','a'], ['い','イ','i'], ['う','ウ','u'], ['え','エ','e'], ['お','オ','o']] },
+  { name: 'K',     items: [['か','カ','ka'], ['き','キ','ki'], ['く','ク','ku'], ['け','ケ','ke'], ['こ','コ','ko']] },
+  { name: 'S',     items: [['さ','サ','sa'], ['し','シ','shi'], ['す','ス','su'], ['せ','セ','se'], ['そ','ソ','so']] },
+  { name: 'T',     items: [['た','タ','ta'], ['ち','チ','chi'], ['つ','ツ','tsu'], ['て','テ','te'], ['と','ト','to']] },
+  { name: 'N',     items: [['な','ナ','na'], ['に','ニ','ni'], ['ぬ','ヌ','nu'], ['ね','ネ','ne'], ['の','ノ','no']] },
+  { name: 'H',     items: [['は','ハ','ha'], ['ひ','ヒ','hi'], ['ふ','フ','fu'], ['へ','ヘ','he'], ['ほ','ホ','ho']] },
+  { name: 'M',     items: [['ま','マ','ma'], ['み','ミ','mi'], ['む','ム','mu'], ['め','メ','me'], ['も','モ','mo']] },
+  { name: 'Y',     items: [['や','ヤ','ya'], null, ['ゆ','ユ','yu'], null, ['よ','ヨ','yo']] },
+  { name: 'R',     items: [['ら','ラ','ra'], ['り','リ','ri'], ['る','ル','ru'], ['れ','レ','re'], ['ろ','ロ','ro']] },
+  { name: 'W',     items: [['わ','ワ','wa'], null, null, null, ['を','ヲ','wo']] },
+  { name: 'N',     items: [['ん','ン','n'], null, null, null, null] }
+];
+
+// Data Dakuon & Handakuon (5 Kolom: G, Z, D, B, P)
+const DAKUON_COLS = [
+  { name: 'G', items: [['が','ガ','ga'], ['ぎ','ギ','gi'], ['ぐ','グ','gu'], ['げ','ゲ','ge'], ['ご','ゴ','go']] },
+  { name: 'Z', items: [['ざ','ザ','za'], ['じ','ジ','ji'], ['ず','ズ','zu'], ['ぜ','ゼ','ze'], ['ぞ','ゾ','zo']] },
+  { name: 'D', items: [['だ','ダ','da'], ['ぢ','ヂ','ji'], ['づ','ヅ','zu'], ['で','デ','de'], ['ど','ド','do']] },
+  { name: 'B', items: [['ば','バ','ba'], ['び','ビ','bi'], ['ぶ','ブ','bu'], ['べ','ベ','be'], ['ぼ','ボ','bo']] },
+  { name: 'P', items: [['ぱ','パ','pa'], ['ぴ','ピ','pi'], ['ぷ','プ','pu'], ['ぺ','ペ','pe'], ['ぽ','ポ','po']] }
+];
+
+// Data Yoon (Kombinasi Ya, Yu, Yo: 11 Baris x 3 Kolom)
+const YOON_ROWS = [
+  [['きゃ','キャ','kya'], ['きゅ','キュ','kyu'], ['きょ','キョ','kyo']],
+  [['ぎゃ','ギャ','gya'], ['ぎゅ','ギュ','gyu'], ['ぎょ','ギョ','gyo']],
+  [['しゃ','シャ','sha'], ['しゅ','シュ','shu'], ['しょ','ショ','sho']],
+  [['じゃ','ジャ','ja'],  ['じゅ','ジュ','ju'],  ['じょ','ジョ','jo']],
+  [['ちゃ','チャ','cha'], ['ちゅ','チュ','chu'], ['ちょ','チョ','cho']],
+  [['にゃ','ニャ','nya'], ['にゅ','ニュ','nyu'], ['にょ','ニョ','nyo']],
+  [['ひゃ','ヒャ','hya'], ['ひゅ','ヒュ','hyu'], ['ひょ','ヒョ','hyo']],
+  [['びゃ','ビャ','bya'], ['びゅ','ビュ','byu'], ['びょ','ビョ','byo']],
+  [['ぴゃ','ピャ','pya'], ['ぴゅ','ピュ','pyu'], ['ぴょ','ピョ','pyo']],
+  [['みゃ','ミャ','mya'], ['みゅ','ミュ','myu'], ['みょ','ミョ','myo']],
+  [['りゃ','リャ','rya'], ['りゅ','リュ','ryu'], ['りょ','リョ','ryo']]
+];
+
+// Audio map for local recordings
+const LOCAL_AUDIO = {
+  'あ': 'audio/b0_a.mp3', 'ア': 'audio/b0_a.mp3',
+  'い': 'audio/b0_i.mp3', 'イ': 'audio/b0_i.mp3',
+  'う': 'audio/b0_u.mp3', 'ウ': 'audio/b0_u.mp3',
+  'え': 'audio/b0_e.mp3', 'エ': 'audio/b0_e.mp3',
+  'お': 'audio/b0_o.mp3', 'オ': 'audio/b0_o.mp3'
+};
+
+let currentType = 'hiragana';
+let activeModalKana = null;
+
+function setKanaType(type) {
+  currentType = type;
+  document.getElementById('btn-hiragana').classList.toggle('active', type === 'hiragana');
+  document.getElementById('btn-katakana').classList.toggle('active', type === 'katakana');
+  renderGrids();
+}
+
+function renderGrids() {
+  const isHira = currentType === 'hiragana';
+  const charIdx = isHira ? 0 : 1;
+
+  // 1. Gojuon
+  const gGojuon = document.getElementById('grid-gojuon');
+  gGojuon.innerHTML = '';
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < GOJUON_COLS.length; c++) {
+      const item = GOJUON_COLS[c].items[r];
+      gGojuon.appendChild(createCard(item, charIdx));
+    }
+  }
+
+  // 2. Dakuon
+  const gDakuon = document.getElementById('grid-dakuon');
+  gDakuon.innerHTML = '';
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < DAKUON_COLS.length; c++) {
+      const item = DAKUON_COLS[c].items[r];
+      gDakuon.appendChild(createCard(item, charIdx));
+    }
+  }
+
+  // 3. Yoon
+  const gYoon = document.getElementById('grid-yoon');
+  gYoon.innerHTML = '';
+  YOON_ROWS.forEach(row => {
+    row.forEach(item => {
+      gYoon.appendChild(createCard(item, charIdx));
+    });
+  });
+}
+
+function createCard(item, charIdx) {
+  if (!item) {
+    const emptyDiv = document.createElement('div');
+    emptyDiv.className = 'kana-card empty';
+    return emptyDiv;
+  }
+  const [hira, kata, romaji] = item;
+  const char = charIdx === 0 ? hira : kata;
+
+  const card = document.createElement('div');
+  card.className = 'kana-card';
+  card.title = `Ketuk untuk mendengar lafal [${romaji}]`;
+  card.innerHTML = `
+    <span class="kana-char">${char}</span>
+    <span class="kana-romaji">${romaji}</span>
+  `;
+  card.onclick = () => {
+    playKanaSound(char);
+    card.classList.remove('is-playing');
+    void card.offsetWidth;
+    card.classList.add('is-playing');
+  };
+  // Long press / right click / shift click opens big card modal
+  card.oncontextmenu = (e) => {
+    e.preventDefault();
+    openBigCard(char, romaji);
+  };
+  return card;
+}
+
+function playKanaSound(char) {
+  if (LOCAL_AUDIO[char]) {
+    const a = new Audio(LOCAL_AUDIO[char]);
+    a.play().catch(() => playSpeech(char));
+  } else {
+    playSpeech(char);
+  }
+}
+
+function playSpeech(char) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(char);
+    u.lang = 'ja-JP';
+    u.rate = 0.95;
+    window.speechSynthesis.speak(u);
+  }
+}
+
+function openBigCard(char, romaji) {
+  activeModalKana = { char, romaji };
+  document.getElementById('modalChar').textContent = char;
+  document.getElementById('modalRomaji').textContent = romaji;
+  document.getElementById('cardModal').classList.add('is-open');
+  playKanaSound(char);
+}
+
+function replayModalAudio() {
+  if (activeModalKana) playKanaSound(activeModalKana.char);
+}
+
+function closeModal(e) {
+  if (!e || e.target.id === 'cardModal' || e.target.classList.contains('modal-close-btn')) {
+    document.getElementById('cardModal').classList.remove('is-open');
+  }
+}
+
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Keyboard ESC to close modal
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// Initial
+renderGrids();
+</script>
+
+</body>
+</html>

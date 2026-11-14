@@ -74,6 +74,21 @@
           },
           tip: "Latih kemampuanmu di pulau ini dengan mengetuk tombol dengar untuk menyimak lafal aslinya!",
         },
+        {
+          tag: "Bagan Lengkap",
+          text: "Bagan Huruf Kana (Cheat Sheet)",
+          romaji: "Kana Cheat Sheet",
+          meaning: "104 Huruf (Dasar, Dakuon & Yōon)",
+          desc: "Bagan visual interaktif dengan media kartu jahitan asli! Dilengkapi tombol dengar lafal untuk seluruh 46 huruf dasar, 25 dakuon/handakuon, dan 33 yōon.\n\nKetuk tombol di bawah untuk membuka bagan lengkap!",
+          example: {
+            jp: "あ・い・う・え・お ... ん",
+            romaji: "a - i - u - e - o ... n",
+            id: "Bagan lengkap 46 Hiragana & Katakana beserta variasi bunyinya.",
+            tokens: ["あ|a", "い|i", "う|u", "え|e", "お|o"],
+          },
+          action: "open-kana-chart",
+          tip: "Gunakan bagan ini sebagai contekan cepat kapan pun kamu lupa bentuk huruf!",
+        },
       ],
     },
     b1: {
@@ -1846,10 +1861,14 @@
   };
 
   function readerIsleSVG(b) {
-    const readKey = `b${b.bab}_${b.mode}`;
+    const isChart = b.mode === "chart";
+    const readKey = isChart ? "b0_chart" : `b${b.bab}_${b.mode}`;
     const isRead = !!(S.readBooks && S.readBooks[readKey]);
+    const badgeText = isChart ? "BAGAN ↗" : b.mode === "materi" ? "MATERI ↗" : "JEPANG ↗";
+    const badgeFill = isChart ? "#9C7CFF" : b.mode === "materi" ? "#FFC63D" : "#FF5C8A";
+    const badgeColor = isChart ? "#fff" : b.mode === "materi" ? "#1D1B3A" : "#fff";
     return `<g transform="translate(${b.x} ${b.y}) scale(0.72)">
-      <g class="isle isle--reader${isRead ? " is-read" : ""}" data-act="reader-node" data-bab="${b.bab}" data-mode="${b.mode}" role="button" tabindex="0" aria-label="Buka Minna no Nihongo Bab ${b.bab} ${b.title} di tab baru">
+      <g class="isle isle--reader${isRead ? " is-read" : ""}" data-act="${isChart ? "kana-chart-node" : "reader-node"}" data-bab="${b.bab}" data-mode="${b.mode}" role="button" tabindex="0" aria-label="Buka ${b.title} Bab ${b.bab}">
         <g class="isle-inner">
           <ellipse class="isle-water" cx="0" cy="26" rx="86" ry="23"/>
           <path class="isle-sand" d="${SAND}"/>
@@ -1863,8 +1882,8 @@
           </g>
         </g>
         <g class="isle-tab-badge" transform="translate(0 -66)">
-          <rect x="-38" y="-12" width="76" height="22" rx="11" fill="${b.mode === "materi" ? "#FFC63D" : "#FF5C8A"}" stroke="#1D1B3A" stroke-width="2.5"/>
-          <text y="3" font-family="'Fredoka', sans-serif" font-weight="700" font-size="10.5" fill="${b.mode === "materi" ? "#1D1B3A" : "#fff"}" text-anchor="middle">${b.mode === "materi" ? "MATERI ↗" : "JEPANG ↗"}</text>
+          <rect x="-38" y="-12" width="76" height="22" rx="11" fill="${badgeFill}" stroke="#1D1B3A" stroke-width="2.5"/>
+          <text y="3" font-family="'Fredoka', sans-serif" font-weight="700" font-size="10.5" fill="${badgeColor}" text-anchor="middle">${badgeText}</text>
         </g>
       </g>
     </g>`;
@@ -2280,6 +2299,18 @@
           `
               : ""
           }
+
+          ${
+            topic.action === "open-kana-chart"
+              ? `
+            <div style="margin-top: 14px;">
+              <button class="topic-modal-btn-done" type="button" data-act="open-kana-chart" style="width: 100%; background: #9C7CFF; border-color: #1D1B3A; color: #fff; box-shadow: 0 4px 0 #1D1B3A;">
+                🎴 Buka Bagan Lengkap Kana (Cheat Sheet) ↗
+              </button>
+            </div>
+          `
+              : ""
+          }
         </div>
 
         <footer class="topic-modal-footer">
@@ -2318,6 +2349,8 @@
       if (restore && typeof restore.focus === "function") try { restore.focus(); } catch {}
     }, 180);
   }
+
+
 
   // ---------- Fitur Masuk Web / Login & Google Auth (Figma Untitled 8) ----------
   function updateTopDockAuth() {
@@ -2986,6 +3019,12 @@
       SFX.rattle();
       buzz(20);
       return toast(`Pulau ini masih terkunci. Selesaikan ${S.nodes[i - 1].label} dulu ya!`);
+    }
+    if (id === "b0") {
+      SFX.select();
+      buzz(10);
+      window.location.href = "kana_chart.html";
+      return;
     }
     if (ALL_STAGES[id]) {
       return startLesson(id), go(0);
@@ -3717,6 +3756,20 @@
       toast(on ? "Efek suara nyala" : "Efek suara mati");
     },
     node: (el) => onNode(el.dataset.id),
+    "kana-chart-node"(el) {
+      SFX.select();
+      buzz(10);
+      FX.at(el, { n: 12, power: 4 });
+      Buddy.say("Membuka Bagan Lengkap Huruf Kana (Cheat Sheet)! 🎴");
+      window.open("kana_chart.html", "_blank");
+    },
+    "open-kana-chart"() {
+      SFX.select();
+      buzz(10);
+      closeTopicModal();
+      Buddy.say("Membuka Bagan Lengkap Huruf Kana (Cheat Sheet)! 🎴");
+      window.open("kana_chart.html", "_blank");
+    },
     "reader-node"(el) {
       const bab = el.dataset.bab || "1";
       const mode = el.dataset.mode || "materi";
