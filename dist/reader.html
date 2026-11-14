@@ -775,31 +775,36 @@
           localStorage.setItem("nq-streak", serializedStreak);
         } catch {}
 
+        const label = `Bab ${bab} (${mode === "materi" ? "Materi" : "Full Jepang"})`;
+        try {
+          sessionStorage.setItem("nq-reader-finished", JSON.stringify({ label, bab, mode }));
+        } catch {}
+
         if (window.opener && !window.opener.closed) {
           try {
             window.opener.postMessage({
               type: "nq-reader-end",
               bab,
               mode,
-              label: `Bab ${bab} (${mode === "materi" ? "Materi" : "Full Jepang"})`
+              label
             }, "*");
           } catch {}
         }
 
         SFX.finish();
         fireEndConfetti();
-        azuSay("Yatta! Kembali ke tab utama ya~ ✨", 2000);
+        azuSay("Yatta! Selesai membaca~ Kembali ke peta! ✨", 2000);
         showToast("Selesai membaca! Mengarahkan kembali ke Peta Utama... 🏝️");
 
         setTimeout(() => {
           if (window.opener && !window.opener.closed) {
-            try { window.opener.focus(); } catch {}
+            try {
+              window.opener.focus();
+              window.close();
+              return;
+            } catch {}
           }
-          window.close();
-          // Fallback if opened directly outside window.open
-          setTimeout(() => {
-            window.location.href = "index.html";
-          }, 180);
+          window.location.href = "index.html";
         }, 720);
       }
 
@@ -830,7 +835,12 @@
         goSlide(p);
       });
 
-      document.getElementById("btnCloseToMap").addEventListener("click", finishAndReturn);
+      document.getElementById("btnCloseToMap").addEventListener("click", () => {
+        if (window.opener && !window.opener.closed) {
+          try { window.close(); return; } catch {}
+        }
+        window.location.href = "index.html";
+      });
       window.finishAndReturn = finishAndReturn;
 
       document.getElementById("btnZoom").addEventListener("click", (e) => {

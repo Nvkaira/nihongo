@@ -1577,6 +1577,16 @@
     } else {
       loadProgress();
       renderMap();
+      try {
+        const justFinished = sessionStorage.getItem("nq-reader-finished");
+        if (justFinished) {
+          sessionStorage.removeItem("nq-reader-finished");
+          const info = JSON.parse(justFinished);
+          setTimeout(() => {
+            refreshReadBooks(true, info.label);
+          }, 350);
+        }
+      } catch {}
     }
   }
   window.NihongoMock = { start };
@@ -1864,7 +1874,7 @@
     const isChart = b.mode === "chart";
     const readKey = isChart ? "b0_chart" : `b${b.bab}_${b.mode}`;
     const isRead = !!(S.readBooks && S.readBooks[readKey]);
-    const badgeText = isChart ? "BAGAN ↗" : b.mode === "materi" ? "MATERI ↗" : "JEPANG ↗";
+    const badgeText = isChart ? "BAGAN" : b.mode === "materi" ? "MATERI" : "JEPANG";
     const badgeFill = isChart ? "#9C7CFF" : b.mode === "materi" ? "#FFC63D" : "#FF5C8A";
     const badgeColor = isChart ? "#fff" : b.mode === "materi" ? "#1D1B3A" : "#fff";
     return `<g transform="translate(${b.x} ${b.y}) scale(0.72)">
@@ -3761,14 +3771,14 @@
       buzz(10);
       FX.at(el, { n: 12, power: 4 });
       Buddy.say("Membuka Bagan Lengkap Huruf Kana (Cheat Sheet)! 🎴");
-      window.open("kana_chart.html", "_blank");
+      window.location.href = "kana_chart.html";
     },
     "open-kana-chart"() {
       SFX.select();
       buzz(10);
       closeTopicModal();
       Buddy.say("Membuka Bagan Lengkap Huruf Kana (Cheat Sheet)! 🎴");
-      window.open("kana_chart.html", "_blank");
+      window.location.href = "kana_chart.html";
     },
     "reader-node"(el) {
       const bab = el.dataset.bab || "1";
@@ -3776,8 +3786,8 @@
       SFX.select();
       buzz(10);
       FX.at(el, { n: 12, power: 4 });
-      Buddy.say(`Membuka Minna no Nihongo Bab ${bab} (${mode === "materi" ? "Materi Indo" : "Full Jepang"}) di tab baru! 📖`);
-      window.open(`reader.html?bab=${bab}&mode=${mode}`, "_blank");
+      Buddy.say(`Membuka Minna no Nihongo Bab ${bab} (${mode === "materi" ? "Materi Indo" : "Full Jepang"})! 📖`);
+      window.location.href = `reader.html?bab=${bab}&mode=${mode}`;
     },
     ship(el) {
       SFX.sail();
