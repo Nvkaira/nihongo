@@ -1,5 +1,8 @@
 # 🇯🇵 Nihongo Quest (Nihonesia)
 
+> 🌐 **Live Website:** [https://nvkaira.github.io/nihongo/dist/index.html](https://nvkaira.github.io/nihongo/dist/index.html)  
+> *Klik link di atas untuk langsung membuka dan memainkan aplikasi Nihongo Quest.*
+
 Aplikasi web interaktif gamifikasi untuk belajar bahasa Jepang berbasis kurikulum Minna no Nihongo dengan visual bergaya Memphis Pop, maskot Azu si anjing laut, bagan lengkap aksara Kana, dan modul petualangan kepulauan.
 
 ---
